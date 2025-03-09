@@ -37,15 +37,16 @@ class IMU_ST_ANGLES_DATA(ctypes.Structure):
         return f"Roll: {self.roll}, Pitch: {self.pitch}, Yaw: {self.yaw}"
 
 class IMU_ST_SENSOR_DATA(ctypes.Structure):
-    _fields_ = [("x", ctypes.c_short),
-                ("y", ctypes.c_short),
-                ("z", ctypes.c_short)]
+    _fields_ = [("x", ctypes.c_float),
+                ("y", ctypes.c_float),
+                ("z", ctypes.c_float)]
 
     def __str__(self):
         return f"X: {self.x}, Y: {self.y}, Z: {self.z}"
 
 # Tell ctypes about function argument types
 lib.imuDataGet.argtypes = [ctypes.POINTER(IMU_ST_ANGLES_DATA),
+                           ctypes.POINTER(IMU_ST_SENSOR_DATA),
                            ctypes.POINTER(IMU_ST_SENSOR_DATA),
                            ctypes.POINTER(IMU_ST_SENSOR_DATA),
                            ctypes.POINTER(IMU_ST_SENSOR_DATA)]
@@ -56,10 +57,12 @@ def imuDataGet():
     gyro = IMU_ST_SENSOR_DATA()
     accel = IMU_ST_SENSOR_DATA()
     magn = IMU_ST_SENSOR_DATA()
+    gravity = IMU_ST_SENSOR_DATA()
 
     lib.imuDataGet(ctypes.byref(angles),
                    ctypes.byref(gyro),
                    ctypes.byref(accel),
+                   ctypes.byref(gravity),
                    ctypes.byref(magn))
 
-    return angles, gyro, accel, magn
+    return angles, gyro, accel, gravity, magn

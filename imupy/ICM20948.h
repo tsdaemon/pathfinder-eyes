@@ -177,6 +177,7 @@ void imuInit(IMU_EN_SENSOR_TYPE *penMotionSensorType);
 void imuDataGet(IMU_ST_ANGLES_DATA *pstAngles, 
                 IMU_ST_SENSOR_DATA *pstGyroRawData,
                 IMU_ST_SENSOR_DATA *pstAccelRawData,
+                IMU_ST_SENSOR_DATA *pstGravity,
                 IMU_ST_SENSOR_DATA *pstMagnRawData); 
 
 uint8_t I2C_ReadOneByte(uint8_t DevAddr, uint8_t RegAddr);

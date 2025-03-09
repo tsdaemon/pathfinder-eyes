@@ -12,7 +12,7 @@
 
 IMU_ST_SENSOR_REG_DATA gstGyroOffset ={0,0,0};
 
-void imuAHRSupdate(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz);
+void imuAHRSupdate(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz, IMU_ST_SENSOR_DATA *pstGravity);
 float invSqrt(float x);
 
 void icm20948init(void);
