@@ -1,0 +1,2 @@
+dtoverlay=imx219
+dtparam=i2c_arm=ongit st
