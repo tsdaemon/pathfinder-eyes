@@ -1,2 +1,5 @@
-dtoverlay=imx219
+camera_auto_detect=0
+dtoverlay=imx219,cam0
+dtoverlay=imx219,cam1
+
 dtparam=i2c_arm=ongit st
