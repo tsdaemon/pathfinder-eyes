@@ -1,0 +1,2 @@
+1. Tune camera to improve picture quality (capture grayscale image?)
+2. Recalibrate in 640x480 resolution
