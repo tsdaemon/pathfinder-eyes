@@ -1,7 +1,8 @@
+import os
 import ctypes
 
 # Load the shared library
-lib = ctypes.CDLL("./ICM20948.so")
+lib = ctypes.CDLL(os.path.join(os.path.dirname(__file__), "ICM20948.so"))
 
 # Define the structures to match the C definitions
 

@@ -1,6 +1,6 @@
 import time
 
-from icm_wrapper import imuDataGet, imuInit
+from ros2_ws.src.icm20948.icm20948.icm_wrapper import imuDataGet, imuInit
 
 
 if __name__ == "__main__":
