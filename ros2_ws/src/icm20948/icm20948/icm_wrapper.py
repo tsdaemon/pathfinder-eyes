@@ -1,8 +1,33 @@
 import os
+import sys
+import platform
 import ctypes
 
-# Load the shared library
-lib = ctypes.CDLL(os.path.join(os.path.dirname(__file__), "ICM20948.so"))
+
+def load_shared_library(lib_basename="ICM20948", search_dir=None):
+    if search_dir is None:
+        search_dir = os.path.dirname(__file__)
+
+    # Build suffix like: cpython-312-aarch64-linux-gnu
+    py_tag = f"cpython-{sys.version_info.major}{sys.version_info.minor}"
+    arch_tag = platform.machine()
+    system_tag = platform.system().lower()
+
+    # Construct search pattern
+    candidates = [
+        f"{lib_basename}.{py_tag}-{arch_tag}-{system_tag}-gnu.so",
+        f"{lib_basename}.{py_tag}-{arch_tag}-gnu.so",
+        f"{lib_basename}.so",  # fallback
+    ]
+    
+    for candidate in candidates:
+        full_path = os.path.join(search_dir, candidate)
+        if os.path.exists(full_path):
+            return ctypes.CDLL(full_path)
+
+    raise FileNotFoundError(f"No suitable shared library found for {lib_basename} in {search_dir}")
+
+lib = load_shared_library("ICM20948")
 
 # Define the structures to match the C definitions
 
@@ -44,9 +69,22 @@ class IMU_ST_SENSOR_DATA(ctypes.Structure):
 
     def __str__(self):
         return f"X: {self.x}, Y: {self.y}, Z: {self.z}"
+    
+    def to_array(self):
+        return [self.x, self.y, self.z]
+
+class IMU_ST_QUATERNION_DATA(ctypes.Structure):
+    _fields_ = [("w", ctypes.c_float),
+                ("x", ctypes.c_float),
+                ("y", ctypes.c_float),
+                ("z", ctypes.c_float)]  
+    
+    def __str__(self):
+        return f"W: {self.w}, X: {self.x}, Y: {self.y}, Z: {self.z}"
 
 # Tell ctypes about function argument types
 lib.imuDataGet.argtypes = [ctypes.POINTER(IMU_ST_ANGLES_DATA),
+                           ctypes.POINTER(IMU_ST_QUATERNION_DATA),
                            ctypes.POINTER(IMU_ST_SENSOR_DATA),
                            ctypes.POINTER(IMU_ST_SENSOR_DATA),
                            ctypes.POINTER(IMU_ST_SENSOR_DATA),
@@ -59,11 +97,13 @@ def imuDataGet():
     accel = IMU_ST_SENSOR_DATA()
     magn = IMU_ST_SENSOR_DATA()
     gravity = IMU_ST_SENSOR_DATA()
+    quaternion = IMU_ST_QUATERNION_DATA()
 
     lib.imuDataGet(ctypes.byref(angles),
+                   ctypes.byref(quaternion),
                    ctypes.byref(gyro),
                    ctypes.byref(accel),
                    ctypes.byref(gravity),
                    ctypes.byref(magn))
 
-    return angles, gyro, accel, gravity, magn
+    return angles, quaternion, gyro, accel, gravity, magn

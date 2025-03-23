@@ -1,3 +1,4 @@
+import math
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Imu, MagneticField
@@ -5,10 +6,12 @@ from math import cos, sin
 
 from icm20948 import imuInit, imuDataGet
 
+CYCLES_TO_CALIBRATE = 100
+
 class ImuNode(Node):
     def __init__(self):
         super().__init__('imu_node')
-        self.publisher_imu = self.create_publisher(Imu, 'imu/data_raw', 10)
+        self.publisher_imu = self.create_publisher(Imu, 'imu/data', 10)
         self.mag_pub = self.create_publisher(MagneticField, 'imu/mag', 10)
 
         self.publisher_timer = None
@@ -23,7 +26,7 @@ class ImuNode(Node):
 
         try:
             imuInit()
-            for i in range(20):
+            for _ in range(CYCLES_TO_CALIBRATE):
                 imuDataGet()
             self.get_logger().info("ICM20948 initialized successfully.")
             self.imu_init_timer.cancel()
@@ -46,40 +49,30 @@ class ImuNode(Node):
         mag_msg.header.frame_id = "imu_link"
 
         try:
-            angles, gyro, accel, grav, magn = imuDataGet()
+            _, quaternion, gyro, accel, grav, magn = imuDataGet()
 
-            # Fill linear acceleration subtracting gravity
-            msg.linear_acceleration.x = accel.x - grav.x
-            msg.linear_acceleration.y = accel.y - grav.y
-            msg.linear_acceleration.z = accel.z - grav.z
+            # Fill linear acceleration subtracting gravity, converting g to m/s^2
+            G_TO_M_S2 = 9.80665
+            msg.linear_acceleration.x = (accel.x - grav.x) * G_TO_M_S2
+            msg.linear_acceleration.y = (accel.y - grav.y) * G_TO_M_S2
+            msg.linear_acceleration.z = (accel.z - grav.z) * G_TO_M_S2
 
-            # Fill angular velocity
-            msg.angular_velocity.x = gyro.x
-            msg.angular_velocity.y = gyro.y
-            msg.angular_velocity.z = gyro.z
+            # Fill angular velocity, converting deg/s to rad/s
+            msg.angular_velocity.x = gyro.x * (math.pi / 180.0)
+            msg.angular_velocity.y = gyro.y * (math.pi / 180.0)
+            msg.angular_velocity.z = gyro.z * (math.pi / 180.0)
 
             # Fill orientation
-            # Convert roll, pitch, yaw to quaternion
-            roll, pitch, yaw = angles., angles.y, angles.z
-            
-            # Calculate quaternion components
-            # cy = cos(yaw * 0.5)
-            # sy = sin(yaw * 0.5)
-            # cp = cos(pitch * 0.5)
-            # sp = sin(pitch * 0.5)
-            # cr = cos(roll * 0.5)
-            # sr = sin(roll * 0.5)
+            msg.orientation.w = quaternion.w
+            msg.orientation.x = quaternion.x
+            msg.orientation.y = quaternion.y
+            msg.orientation.z = quaternion.z
 
-            # msg.orientation.w = cr * cp * cy + sr * sp * sy
-            # msg.orientation.x = sr * cp * cy - cr * sp * sy
-            # msg.orientation.y = cr * sp * cy + sr * cp * sy
-            # msg.orientation.z = cr * cp * sy - sr * sp * cy
-
-            msg.orientation_covariance[0] = -1.0  # Means orientation not provided
-
-            mag_msg.magnetic_field.x = magn.x
-            mag_msg.magnetic_field.y = magn.y
-            mag_msg.magnetic_field.z = magn.z
+            # Fill magnetic field
+            MICROTESLA_TO_TESLA = 1e-6
+            mag_msg.magnetic_field.x = magn.x * MICROTESLA_TO_TESLA
+            mag_msg.magnetic_field.y = magn.y * MICROTESLA_TO_TESLA
+            mag_msg.magnetic_field.z = magn.z * MICROTESLA_TO_TESLA
 
             self.publisher_imu.publish(msg)
             self.mag_pub.publish(mag_msg)

@@ -160,6 +160,14 @@ typedef struct imu_st_angles_data_tag
   float fRoll;
 }IMU_ST_ANGLES_DATA;
 
+typedef struct imu_st_quaternion_data_tag
+{
+  float fW;
+  float fX;
+  float fY;
+  float fZ;
+}IMU_ST_QUATERNION_DATA;
+
 typedef struct imu_st_sensor_data_tag
 {
   float fX;
@@ -175,6 +183,7 @@ typedef struct icm20948_st_avg_data_tag
 
 void imuInit(IMU_EN_SENSOR_TYPE *penMotionSensorType);
 void imuDataGet(IMU_ST_ANGLES_DATA *pstAngles, 
+                IMU_ST_QUATERNION_DATA *pstQuaternion,
                 IMU_ST_SENSOR_DATA *pstGyroRawData,
                 IMU_ST_SENSOR_DATA *pstAccelRawData,
                 IMU_ST_SENSOR_DATA *pstGravity,

@@ -105,6 +105,7 @@ void imuInit(IMU_EN_SENSOR_TYPE *penMotionSensorType)
 }
 
 void imuDataGet(IMU_ST_ANGLES_DATA *pstAngles, 
+                IMU_ST_QUATERNION_DATA *pstQuaternion,
                 IMU_ST_SENSOR_DATA *pstGyroRawData,
                 IMU_ST_SENSOR_DATA *pstAccelRawData,
                 IMU_ST_SENSOR_DATA *pstGravity,
@@ -134,6 +135,11 @@ void imuDataGet(IMU_ST_ANGLES_DATA *pstAngles,
   pstAngles->fPitch = asin(-2 * q1 * q3 + 2 * q0* q2)* 57.3; // pitch
   pstAngles->fRoll = atan2(2 * q2 * q3 + 2 * q0 * q1, -2 * q1 * q1 - 2 * q2* q2 + 1)* 57.3; // roll
   pstAngles->fYaw = atan2(-2 * q1 * q2 - 2 * q0 * q3, 2 * q2 * q2 + 2 * q3 * q3 - 1) * 57.3; 
+
+  pstQuaternion->fW = q0;
+  pstQuaternion->fX = q1;
+  pstQuaternion->fY = q2;
+  pstQuaternion->fZ = q3;
 
   pstGyroRawData->fX = (float)s16Gyro[0]/GYRO_SSF_AT_FS_1000DPS;
   pstGyroRawData->fY = (float)s16Gyro[1]/GYRO_SSF_AT_FS_1000DPS;
@@ -287,9 +293,9 @@ void icm20948GyroRead(int16_t* ps16X, int16_t* ps16Y, int16_t* ps16Z)
 {
    uint8_t u8Buf[6];
     int16_t s16Buf[3] = {0}; 
-    // uint8_t i;
-    // int32_t s32OutBuf[3] = {0};
-    // static ICM20948_ST_AVG_DATA sstAvgBuf[3];
+    uint8_t i;
+    int32_t s32OutBuf[3] = {0};
+    static ICM20948_ST_AVG_DATA sstAvgBuf[3];
     static int16_t ss16c = 0;
     ss16c++;
 
@@ -305,13 +311,13 @@ void icm20948GyroRead(int16_t* ps16X, int16_t* ps16Y, int16_t* ps16Z)
     u8Buf[1]=I2C_ReadOneByte(I2C_ADD_ICM20948,REG_ADD_GYRO_ZOUT_H);
     s16Buf[2]=  (u8Buf[1]<<8)|u8Buf[0];
 
-    // for(i = 0; i < 3; i ++) 
-    // {
-    //     icm20948CalAvgValue(&sstAvgBuf[i].u8Index, sstAvgBuf[i].s16AvgBuffer, s16Buf[i], s32OutBuf + i);
-    // }
-    *ps16X = s16Buf[0] - gstGyroOffset.s16X;
-    *ps16Y = s16Buf[1] - gstGyroOffset.s16Y;
-    *ps16Z = s16Buf[2] - gstGyroOffset.s16Z;
+    for(i = 0; i < 3; i ++) 
+    {
+        icm20948CalAvgValue(&sstAvgBuf[i].u8Index, sstAvgBuf[i].s16AvgBuffer, s16Buf[i], s32OutBuf + i);
+    }
+    *ps16X = s32OutBuf[0] - gstGyroOffset.s16X;
+    *ps16Y = s32OutBuf[1] - gstGyroOffset.s16Y;
+    *ps16Z = s32OutBuf[2] - gstGyroOffset.s16Z;
     
     return;
 }
@@ -320,9 +326,9 @@ void icm20948AccelRead(int16_t* ps16X, int16_t* ps16Y, int16_t* ps16Z)
 {
     uint8_t u8Buf[2];
     int16_t s16Buf[3] = {0}; 
-    // uint8_t i;
-    // int32_t s32OutBuf[3] = {0};
-    // static ICM20948_ST_AVG_DATA sstAvgBuf[3];
+    uint8_t i;
+    int32_t s32OutBuf[3] = {0};
+    static ICM20948_ST_AVG_DATA sstAvgBuf[3];
 
     u8Buf[0]=I2C_ReadOneByte(I2C_ADD_ICM20948,REG_ADD_ACCEL_XOUT_L); 
     u8Buf[1]=I2C_ReadOneByte(I2C_ADD_ICM20948,REG_ADD_ACCEL_XOUT_H);
@@ -336,13 +342,13 @@ void icm20948AccelRead(int16_t* ps16X, int16_t* ps16Y, int16_t* ps16Z)
     u8Buf[1]=I2C_ReadOneByte(I2C_ADD_ICM20948,REG_ADD_ACCEL_ZOUT_H);
     s16Buf[2]=  (u8Buf[1]<<8)|u8Buf[0];
 
-    // for(i = 0; i < 3; i ++) 
-    // {
-    //     icm20948CalAvgValue(&sstAvgBuf[i].u8Index, sstAvgBuf[i].s16AvgBuffer, s16Buf[i], s32OutBuf + i);
-    // }
-    *ps16X = s16Buf[0];
-    *ps16Y = s16Buf[1];
-    *ps16Z = s16Buf[2];
+    for(i = 0; i < 3; i ++) 
+    {
+        icm20948CalAvgValue(&sstAvgBuf[i].u8Index, sstAvgBuf[i].s16AvgBuffer, s16Buf[i], s32OutBuf + i);
+    }
+    *ps16X = s32OutBuf[0];
+    *ps16Y = s32OutBuf[1];
+    *ps16Z = s32OutBuf[2];
   
     return;
 
@@ -353,9 +359,9 @@ void icm20948MagRead(int16_t* ps16X, int16_t* ps16Y, int16_t* ps16Z)
     uint8_t counter = 20;
     uint8_t u8Data[MAG_DATA_LEN];
     int16_t s16Buf[3] = {0}; 
-    // uint8_t i;
-    // int32_t s32OutBuf[3] = {0};
-    // static ICM20948_ST_AVG_DATA sstAvgBuf[3];
+    uint8_t i;
+    int32_t s32OutBuf[3] = {0};
+    static ICM20948_ST_AVG_DATA sstAvgBuf[3];
     while( counter>0 )
     {
         usleep(10*1000);
@@ -379,14 +385,14 @@ void icm20948MagRead(int16_t* ps16X, int16_t* ps16Y, int16_t* ps16Z)
         s16Buf[2] = ((int16_t)u8Data[5]<<8) | u8Data[4];       
     }
 
-    // for(i = 0; i < 3; i ++) 
-    // {
-    //     icm20948CalAvgValue(&sstAvgBuf[i].u8Index, sstAvgBuf[i].s16AvgBuffer, s16Buf[i], s32OutBuf + i);
-    // }
+    for(i = 0; i < 3; i ++) 
+    {
+        icm20948CalAvgValue(&sstAvgBuf[i].u8Index, sstAvgBuf[i].s16AvgBuffer, s16Buf[i], s32OutBuf + i);
+    }
     
-    *ps16X =  s16Buf[0];
-    *ps16Y = -s16Buf[1];
-    *ps16Z = -s16Buf[2];
+    *ps16X =  s32OutBuf[0];
+    *ps16Y = -s32OutBuf[1];
+    *ps16Z = -s32OutBuf[2];
     return;
 }
 

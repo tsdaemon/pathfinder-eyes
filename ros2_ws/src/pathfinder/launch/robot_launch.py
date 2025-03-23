@@ -28,17 +28,16 @@ def generate_launch_description():
             parameters=[
                 {
                     'use_sim_time': False,
-                    'odom0': '/imu/data_raw',
-                    'imu0': '/imu/data_raw',
+                    'imu0': '/imu/data',
                     'imu0_config': [
                         False, False, False,     # position
-                        False, False, False,     # orientation
+                        True, True, True,        # orientation
                         False, False, False,     # linear velocity
                         True, True, True,        # angular velocity (gyro)
                         True, True, True         # linear acceleration
                     ],
                     'imu0_differential': False,
-                    'imu0_remove_gravitational_acceleration': True,
+                    'imu0_remove_gravitational_acceleration': False,
                     'publish_tf': True,
                     'map_frame': 'map',
                     'odom_frame': 'odom',
