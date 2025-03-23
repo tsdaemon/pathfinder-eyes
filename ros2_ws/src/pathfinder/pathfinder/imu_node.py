@@ -7,6 +7,9 @@ from math import cos, sin
 from icm20948 import imuInit, imuDataGet
 
 CYCLES_TO_CALIBRATE = 100
+ORIENTATION_COVARIANCE = 0.02
+ANGULAR_VELOCITY_COVARIANCE = 0.01
+LINEAR_ACCELERATION_COVARIANCE = 0.2
 
 class ImuNode(Node):
     def __init__(self):
@@ -67,6 +70,11 @@ class ImuNode(Node):
             msg.orientation.x = quaternion.x
             msg.orientation.y = quaternion.y
             msg.orientation.z = quaternion.z
+
+            # Set covariance 
+            msg.orientation_covariance = [ORIENTATION_COVARIANCE] * 3 + [0] * 3 + [ORIENTATION_COVARIANCE] * 3
+            msg.angular_velocity_covariance = [ANGULAR_VELOCITY_COVARIANCE] * 3 + [0] * 3 + [ANGULAR_VELOCITY_COVARIANCE] * 3  
+            msg.linear_acceleration_covariance = [LINEAR_ACCELERATION_COVARIANCE] * 3 + [0] * 3 + [LINEAR_ACCELERATION_COVARIANCE] * 3
 
             # Fill magnetic field
             MICROTESLA_TO_TESLA = 1e-6
