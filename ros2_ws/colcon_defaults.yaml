@@ -1,0 +1,3 @@
+build:
+  cmake-args:
+    - -DPYTHON_EXECUTABLE=/home/anatolii/eyes/env/bin/python3
