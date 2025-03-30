@@ -1,2 +1,11 @@
-1. Recalibrate in 640x480 resolution
-2. Return quaterion from IMU
+Calibration
+1. Print Apriltag on A4 paper
+2. Implement camera node
+3. Implement launch file for calibration
+4. Record data
+    a. Convert from ROS2 to ROS1
+5. Calibrate with Kalibr
+    a. Configuration for camera
+    b. Configuration for IMU
+6. Implement using calibration data for camera node
+7. Implement using calibration data for IMU node
