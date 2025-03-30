@@ -7,6 +7,7 @@ from math import cos, sin
 from icm20948 import imuInit, imuDataGet
 
 CYCLES_TO_CALIBRATE = 100
+FREQUENCY = 50
 ORIENTATION_COVARIANCE = 0.02
 ANGULAR_VELOCITY_COVARIANCE = 0.01
 LINEAR_ACCELERATION_COVARIANCE = 0.2
@@ -29,13 +30,14 @@ class ImuNode(Node):
 
         try:
             imuInit()
+            self.get_logger().info("ICM20948 initialized successfully.")
             for _ in range(CYCLES_TO_CALIBRATE):
                 imuDataGet()
-            self.get_logger().info("ICM20948 initialized successfully.")
+            self.get_logger().info("ICM20948 calibrated successfully.")
             self.imu_init_timer.cancel()
 
             # Now start the main publishing timer
-            timer_period = 0.05  # 20 Hz
+            timer_period = 1 / FREQUENCY
             self.publisher_timer = self.create_timer(timer_period, self.publish_imu_data)
 
         except Exception as e:

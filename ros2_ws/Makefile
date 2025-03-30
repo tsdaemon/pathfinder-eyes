@@ -1,6 +1,6 @@
 .PHONY: build
 build:
-	colcon build --packages-select icm20948 pathfinder
+	python3 -m colcon build --packages-select icm20948 pathfinder
 
 .PHONY: clean
 clean:

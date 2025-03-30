@@ -8,6 +8,9 @@
   
   ******************************************************************************
   */
+#define _POSIX_C_SOURCE 199309L
+#include <unistd.h>
+#include <time.h>
 #include "ICM20948.h"
 
 IMU_ST_SENSOR_REG_DATA gstGyroOffset ={0,0,0};
@@ -113,10 +116,33 @@ void imuDataGet(IMU_ST_ANGLES_DATA *pstAngles,
 {
   float MotionVal[9];
   int16_t s16Gyro[3], s16Accel[3], s16Magn[3];
+  struct timespec start, end, fn_start, fn_end;
+  double time_taken;
+  clock_gettime(CLOCK_MONOTONIC, &start);
 
+  // Time accelerometer read
+  clock_gettime(CLOCK_MONOTONIC, &fn_start);
   icm20948AccelRead(&s16Accel[0], &s16Accel[1], &s16Accel[2]);
+  clock_gettime(CLOCK_MONOTONIC, &fn_end);
+  time_taken = (fn_end.tv_sec - fn_start.tv_sec) * 1e9;
+  time_taken = (time_taken + (fn_end.tv_nsec - fn_start.tv_nsec)) * 1e-9;
+  // printf("icm20948AccelRead took %f seconds\n", time_taken);
+
+  // Time gyroscope read
+  clock_gettime(CLOCK_MONOTONIC, &fn_start);
   icm20948GyroRead(&s16Gyro[0], &s16Gyro[1], &s16Gyro[2]);
+  clock_gettime(CLOCK_MONOTONIC, &fn_end);
+  time_taken = (fn_end.tv_sec - fn_start.tv_sec) * 1e9;
+  time_taken = (time_taken + (fn_end.tv_nsec - fn_start.tv_nsec)) * 1e-9;
+  // printf("icm20948GyroRead took %f seconds\n", time_taken);
+
+  // Time magnetometer read
+  clock_gettime(CLOCK_MONOTONIC, &fn_start);
   icm20948MagRead(&s16Magn[0], &s16Magn[1], &s16Magn[2]);
+  clock_gettime(CLOCK_MONOTONIC, &fn_end);
+  time_taken = (fn_end.tv_sec - fn_start.tv_sec) * 1e9;
+  time_taken = (time_taken + (fn_end.tv_nsec - fn_start.tv_nsec)) * 1e-9;
+  // printf("icm20948MagRead took %f seconds\n", time_taken);
 
   MotionVal[0]=s16Gyro[0]/32.8;
   MotionVal[1]=s16Gyro[1]/32.8;
@@ -127,10 +153,16 @@ void imuDataGet(IMU_ST_ANGLES_DATA *pstAngles,
   MotionVal[6]=s16Magn[0];
   MotionVal[7]=s16Magn[1];
   MotionVal[8]=s16Magn[2];
+
+  // Time AHRS update
+  clock_gettime(CLOCK_MONOTONIC, &fn_start);
   imuAHRSupdate((float)MotionVal[0] * 0.0175, (float)MotionVal[1] * 0.0175, (float)MotionVal[2] * 0.0175,
                 (float)MotionVal[3], (float)MotionVal[4], (float)MotionVal[5], 
                 (float)MotionVal[6], (float)MotionVal[7], MotionVal[8], pstGravity);
-
+  clock_gettime(CLOCK_MONOTONIC, &fn_end);
+  time_taken = (fn_end.tv_sec - fn_start.tv_sec) * 1e9;
+  time_taken = (time_taken + (fn_end.tv_nsec - fn_start.tv_nsec)) * 1e-9;
+  // printf("imuAHRSupdate took %f seconds\n", time_taken);
 
   pstAngles->fPitch = asin(-2 * q1 * q3 + 2 * q0* q2)* 57.3; // pitch
   pstAngles->fRoll = atan2(2 * q2 * q3 + 2 * q0 * q1, -2 * q1 * q1 - 2 * q2* q2 + 1)* 57.3; // roll
@@ -152,6 +184,11 @@ void imuDataGet(IMU_ST_ANGLES_DATA *pstAngles,
   pstMagnRawData->fX = (float)s16Magn[0]*MAG_SSF_AT_FS_4900uT;
   pstMagnRawData->fY = (float)s16Magn[1]*MAG_SSF_AT_FS_4900uT;
   pstMagnRawData->fZ = (float)s16Magn[2]*MAG_SSF_AT_FS_4900uT;  
+
+  clock_gettime(CLOCK_MONOTONIC, &end);
+  time_taken = (end.tv_sec - start.tv_sec) * 1e9;
+  time_taken = (time_taken + (end.tv_nsec - start.tv_nsec)) * 1e-9;
+  // printf("Total imuDataGet took %f seconds\n", time_taken);
 
   return;  
 }
@@ -258,10 +295,10 @@ void icm20948init(void)
 
   /* user bank 2 register */
   I2C_WriteOneByte(I2C_ADD_ICM20948, REG_ADD_REG_BANK_SEL, REG_VAL_REG_BANK_2);
-  I2C_WriteOneByte( I2C_ADD_ICM20948, REG_ADD_GYRO_SMPLRT_DIV, 0x07);
+  // I2C_WriteOneByte( I2C_ADD_ICM20948, REG_ADD_GYRO_SMPLRT_DIV, 0x07);
   I2C_WriteOneByte( I2C_ADD_ICM20948, REG_ADD_GYRO_CONFIG_1,   
                   REG_VAL_BIT_GYRO_DLPCFG_6 | REG_VAL_BIT_GYRO_FS_1000DPS | REG_VAL_BIT_GYRO_DLPF);
-  I2C_WriteOneByte( I2C_ADD_ICM20948, REG_ADD_ACCEL_SMPLRT_DIV_2,  0x07);
+  // I2C_WriteOneByte( I2C_ADD_ICM20948, REG_ADD_ACCEL_SMPLRT_DIV_2,  0x07);
   I2C_WriteOneByte( I2C_ADD_ICM20948, REG_ADD_ACCEL_CONFIG,
                   REG_VAL_BIT_ACCEL_DLPCFG_6 | REG_VAL_BIT_ACCEL_FS_2g | REG_VAL_BIT_ACCEL_DLPF);
 
@@ -275,7 +312,7 @@ void icm20948init(void)
   icm20948MagCheck();
 
   icm20948WriteSecondary( I2C_ADD_ICM20948_AK09916|I2C_ADD_ICM20948_AK09916_WRITE,
-                               REG_ADD_MAG_CNTL2, REG_VAL_MAG_MODE_20HZ);  
+                               REG_ADD_MAG_CNTL2, REG_VAL_MAG_MODE_100HZ);  
   return;
 }
 
@@ -356,23 +393,23 @@ void icm20948AccelRead(int16_t* ps16X, int16_t* ps16Y, int16_t* ps16Z)
 
 void icm20948MagRead(int16_t* ps16X, int16_t* ps16Y, int16_t* ps16Z)
 {
-    uint8_t counter = 20;
+    uint8_t counter = 3;
     uint8_t u8Data[MAG_DATA_LEN];
     int16_t s16Buf[3] = {0}; 
     uint8_t i;
     int32_t s32OutBuf[3] = {0};
     static ICM20948_ST_AVG_DATA sstAvgBuf[3];
-    while( counter>0 )
-    {
-        usleep(10*1000);
-        icm20948ReadSecondary( I2C_ADD_ICM20948_AK09916|I2C_ADD_ICM20948_AK09916_READ, 
-                                    REG_ADD_MAG_ST2, 1, u8Data);
+    // while( counter>0 )
+    // {
+    //     usleep(1*1000);
+    //     icm20948ReadSecondary( I2C_ADD_ICM20948_AK09916|I2C_ADD_ICM20948_AK09916_READ, 
+    //                                 REG_ADD_MAG_ST2, 1, u8Data);
         
-        if ((u8Data[0] & 0x01) != 0)
-            break;
+    //     if ((u8Data[0] & 0x01) != 0)
+    //         break;
         
-        counter--;
-    }
+    //     counter--;
+    // }
     
     if(counter != 0)
     {

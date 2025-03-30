@@ -8,6 +8,17 @@ from rclpy.exceptions import ParameterNotDeclaredException
 import yaml
 import os
 
+FRAME_RATE = 30
+HEIGHT = 1080
+WIDTH = 1920
+
+CAMERA_CONFIG = dict(
+    main={"size": (WIDTH, HEIGHT), "format": "YUV420"},
+    display=None,
+    buffer_count=6,
+    controls={"FrameRate": FRAME_RATE}
+)
+
 class CameraNode(Node):
     def __init__(self):
         super().__init__('camera_node')
@@ -74,7 +85,9 @@ class CameraNode(Node):
         try:
             self.picam2 = Picamera2(self.camera_id)
             self.picam2.configure(
-                self.picam2.create_preview_configuration()
+                self.picam2.create_video_configuration(
+                    **CAMERA_CONFIG
+                )
             )
             self.picam2.start()
             
@@ -83,7 +96,7 @@ class CameraNode(Node):
             self.init_timer.cancel()
             
             # Start publishing images
-            self.timer = self.create_timer(0.1, self.publish_image)  # 10Hz
+            self.timer = self.create_timer(1/FRAME_RATE, self.publish_image)
             
         except Exception as e:
             self.get_logger().warn(f'Failed to initialize camera: {str(e)}')
@@ -94,13 +107,14 @@ class CameraNode(Node):
             
         try:
             # Capture frame
-            frame = self.picam2.capture_array()
+            frame = self.picam2.capture_array("main")
+            frame = frame[:HEIGHT, :]  # Take only Y channel (top part)
             
             # Get current timestamp
             current_time = self.get_clock().now().to_msg()
             
             # Convert to ROS Image message
-            msg = self.bridge.cv2_to_imgmsg(frame, encoding='bgr8')
+            msg = self.bridge.cv2_to_imgmsg(frame, encoding='mono8')
             msg.header.stamp = current_time
             msg.header.frame_id = f'camera_{self.camera_id}_optical_frame'
             

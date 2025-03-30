@@ -12,6 +12,7 @@ setup(
         ('share/' + package_name, ['package.xml']),
         ('share/pathfinder/launch', [
             'launch/robot_launch.py',
+            'launch/calibrate_launch.py',
         ]),
     ],
     install_requires=['setuptools', 'icm20948'],
@@ -24,9 +25,11 @@ setup(
     entry_points={
         'console_scripts': [
             'imu_node = pathfinder.imu_node:main',
+            'camera_node = pathfinder.camera_node:main',
         ],
         'launch': [
             'robot_launch  = pathfinder.launch.robot_launch:generate_launch_description',
+            'calibrate_launch = pathfinder.launch.calibrate_launch:generate_launch_description',
         ],
     },
 )
