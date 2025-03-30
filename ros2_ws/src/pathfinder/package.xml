@@ -11,6 +11,7 @@
   <depend>std_msgs</depend>
   <depend>foxglove_bridge</depend>
   <depend>robot_localization</depend>
+  <depend>image_proc</depend>
 
   <exec_depend>ros2launch</exec_depend>
 

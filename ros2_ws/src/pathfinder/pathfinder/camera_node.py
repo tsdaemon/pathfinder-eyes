@@ -1,3 +1,4 @@
+import numpy as np
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image, CameraInfo
@@ -7,8 +8,9 @@ from rclpy.parameter import Parameter
 from rclpy.exceptions import ParameterNotDeclaredException
 import yaml
 import os
+from ament_index_python.packages import get_package_share_directory
 
-FRAME_RATE = 30
+FRAME_RATE = 20
 HEIGHT = 1080
 WIDTH = 1920
 
@@ -54,28 +56,43 @@ class CameraNode(Node):
         self.init_timer = self.create_timer(1.0, self.try_init_camera)
         
     def load_camera_info(self):
-        camera_info_msg = CameraInfo()
+        cam_info = CameraInfo()
         
-        if self.camera_info_file and os.path.exists(self.camera_info_file):
+        # Get absolute path to camera info file
+        camera_info_path = os.path.join(get_package_share_directory('pathfinder'), self.camera_info_file)
+        if self.camera_info_file and os.path.exists(camera_info_path):
             try:
-                with open(self.camera_info_file, 'r') as f:
+                with open(camera_info_path, 'r') as f:
                     calib_data = yaml.safe_load(f)
                     
-                camera_info_msg.width = calib_data['image_width']
-                camera_info_msg.height = calib_data['image_height']
-                camera_info_msg.k = calib_data['camera_matrix']['data']
-                camera_info_msg.d = calib_data['distortion_coefficients']['data']
-                camera_info_msg.r = calib_data['rectification_matrix']['data']
-                camera_info_msg.p = calib_data['projection_matrix']['data']
-                camera_info_msg.distortion_model = calib_data['distortion_model']
-                
+                cam_info.width = calib_data["resolution"][0]
+                cam_info.height = calib_data["resolution"][1]
+
+                fx, fy, cx, cy = calib_data["intrinsics"]
+                cam_info.k = [fx, 0, cx,
+                            0, fy, cy,
+                            0, 0, 1]
+
+                cam_info.d = calib_data["distortion_coeffs"]
+                cam_info.distortion_model = "plumb_bob"  # for radtan
+
+                # Unrectified — identity rotation
+                cam_info.r = [1, 0, 0,
+                              0, 1, 0,
+                              0, 0, 1]
+
+                # Projection matrix (no stereo baseline in P[3] or P[7])
+                cam_info.p = [fx, 0, cx, 0,
+                            0, fy, cy, 0,
+                            0, 0, 1, 0]
                 self.get_logger().info('Loaded camera calibration data')
+                
             except Exception as e:
                 self.get_logger().error(f'Failed to load camera calibration: {str(e)}')
         else:
-            self.get_logger().warn('No camera calibration file provided or file not found')
+            self.get_logger().warn('No camera calibration file provided or file not found. Looking for: ' + camera_info_path)
             
-        return camera_info_msg
+        return cam_info
             
     def try_init_camera(self):
         if self.picam2 is not None:

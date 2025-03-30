@@ -1,2 +1,3 @@
 colcon-core
 rclpy
+rosbags>=0.9.1

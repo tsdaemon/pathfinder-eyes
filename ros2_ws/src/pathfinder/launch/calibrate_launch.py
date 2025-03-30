@@ -23,6 +23,14 @@ def generate_launch_description():
                 'camera_info_topic': 'stereo/left/camera_info'
             }]
         ),
+        # Left camera image_proc throttle
+        Node(
+            package='topic_tools',
+            executable='throttle',
+            name='left_camera_throttle',
+            output='screen',
+            arguments=['messages', '/stereo/left/image_raw', '2.0'],
+        ),
 
         # Right camera node  
         Node(
@@ -35,6 +43,15 @@ def generate_launch_description():
                 'image_topic': 'stereo/right/image_raw',
                 'camera_info_topic': 'stereo/right/camera_info'
             }]
+        ),
+
+        # Right camera image_proc throttle
+        Node(
+            package='topic_tools',
+            executable='throttle',
+            name='right_camera_throttle',
+            output='screen',
+            arguments=['messages', '/stereo/right/image_raw', '2.0'],
         ),
 
         # Foxglove bridge node

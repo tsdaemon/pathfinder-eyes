@@ -13,6 +13,11 @@ setup(
         ('share/pathfinder/launch', [
             'launch/robot_launch.py',
             'launch/calibrate_launch.py',
+            'launch/rmaptab_launch.py',
+        ]),
+        ('share/pathfinder/camera', [
+            'pathfinder/camera/left.yaml',
+            'pathfinder/camera/right.yaml',
         ]),
     ],
     install_requires=['setuptools', 'icm20948'],
@@ -30,6 +35,7 @@ setup(
         'launch': [
             'robot_launch  = pathfinder.launch.robot_launch:generate_launch_description',
             'calibrate_launch = pathfinder.launch.calibrate_launch:generate_launch_description',
+            'rmaptab_launch = pathfinder.launch.rmaptab_launch:generate_launch_description',
         ],
     },
 )
