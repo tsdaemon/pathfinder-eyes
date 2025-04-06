@@ -1,5 +1,6 @@
 dtparam=i2c_arm=on
 dtoverlay=imx219,cam0
 dtoverlay=imx219,cam1
+dtoverlay=vc4-kms-v3d,cma-128
 #camera_auto_detect=1
 #display_auto_detect=1

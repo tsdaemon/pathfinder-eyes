@@ -1,0 +1,10 @@
+#!/bin/sh
+unset SESSION_MANAGER
+unset DBUS_SESSION_BUS_ADDRESS
+export LIBGL_ALWAYS_SOFTWARE=1
+export XDG_SESSION_TYPE=x11
+
+openbox &
+lxqt-panel &
+pcmanfm-qt --desktop &
+exec qterminal
