@@ -18,7 +18,7 @@ def generate_launch_description():
             name='camera_left',
             output='screen',
             parameters=[{
-                'camera_id': 0,
+                'camera_id': 1,
                 'image_topic': 'stereo/left/image_raw',
                 'camera_info_topic': 'stereo/left/camera_info'
             }]
@@ -39,7 +39,7 @@ def generate_launch_description():
             name='camera_right',
             output='screen',
             parameters=[{
-                'camera_id': 1,
+                'camera_id': 0,
                 'image_topic': 'stereo/right/image_raw',
                 'camera_info_topic': 'stereo/right/camera_info'
             }]

@@ -14,7 +14,7 @@ def generate_launch_description():
         launch_arguments={
             'namespace': 'stereo_resized',
             'approximate_sync': 'True',
-            'use_color': 'False'
+            'use_color': 'False',
         }.items()
     )
 
@@ -69,8 +69,6 @@ def generate_launch_description():
             parameters=[{
                 'scale_height': RESIZE_SCALE,
                 'scale_width': RESIZE_SCALE,
-                'use_scale': True,  # Ensure scaling is enabled
-                'interpolation': 1  # INTER_LINEAR interpolation
             }],
             output='screen'  # Add output to see any errors or warnings
         ),

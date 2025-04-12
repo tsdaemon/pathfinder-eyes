@@ -1,6 +1,7 @@
 import numpy as np
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image, CameraInfo
 from cv_bridge import CvBridge
 from picamera2 import Picamera2
@@ -15,7 +16,7 @@ HEIGHT = 1080
 WIDTH = 1920
 
 CAMERA_CONFIG = dict(
-    main={"size": (WIDTH, HEIGHT), "format": "YUV420"},
+    main={"size": (WIDTH, HEIGHT), "format": "RGB888"},
     display=None,
     buffer_count=6,
     controls={"FrameRate": FRAME_RATE}
@@ -46,8 +47,8 @@ class CameraNode(Node):
         # Initialize the camera
         self.picam2 = None
         self.bridge = CvBridge()
-        self.publisher = self.create_publisher(Image, self.image_topic, 10)
-        self.camera_info_pub = self.create_publisher(CameraInfo, self.camera_info_topic, 10)
+        self.publisher = self.create_publisher(Image, self.image_topic, qos_profile_sensor_data)
+        self.camera_info_pub = self.create_publisher(CameraInfo, self.camera_info_topic, qos_profile_sensor_data)
         
         # Load camera calibration data
         self.camera_info_msg = self.load_camera_info()
@@ -69,6 +70,7 @@ class CameraNode(Node):
                 cam_info.height = calib_data["resolution"][1]
 
                 fx, fy, cx, cy = calib_data["intrinsics"]
+                T = calib_data.get("T_cn_cnm1", None)
                 cam_info.k = [fx, 0, cx,
                             0, fy, cy,
                             0, 0, 1]
@@ -76,13 +78,17 @@ class CameraNode(Node):
                 cam_info.d = calib_data["distortion_coeffs"]
                 cam_info.distortion_model = "plumb_bob"  # for radtan
 
-                # Unrectified — identity rotation
-                cam_info.r = [1, 0, 0,
-                              0, 1, 0,
-                              0, 0, 1]
+                if T:
+                    baseline = T[0][3]
+                    tx = -fx * baseline
+                    cam_info.r = np.array(T)[:3, :3].flatten().tolist()
+                else:
+                    tx = 0
+                    cam_info.r = [1, 0, 0,
+                                0, 1, 0,
+                                0, 0, 1]
 
-                # Projection matrix (no stereo baseline in P[3] or P[7])
-                cam_info.p = [fx, 0, cx, 0,
+                cam_info.p = [fx, 0, cx, tx,
                             0, fy, cy, 0,
                             0, 0, 1, 0]
                 self.get_logger().info('Loaded camera calibration data')
@@ -125,13 +131,13 @@ class CameraNode(Node):
         try:
             # Capture frame
             frame = self.picam2.capture_array("main")
-            frame = frame[:HEIGHT, :]  # Take only Y channel (top part)
+            # Capture full RGB image
             
             # Get current timestamp
             current_time = self.get_clock().now().to_msg()
             
             # Convert to ROS Image message
-            msg = self.bridge.cv2_to_imgmsg(frame, encoding='mono8')
+            msg = self.bridge.cv2_to_imgmsg(frame, encoding="rgb8")
             msg.header.stamp = current_time
             msg.header.frame_id = f'camera_{self.camera_id}_optical_frame'
             
@@ -140,8 +146,8 @@ class CameraNode(Node):
             self.camera_info_msg.header.frame_id = f'camera_{self.camera_id}_optical_frame'
             
             # Publish the messages
-            self.publisher.publish(msg)
             self.camera_info_pub.publish(self.camera_info_msg)
+            self.publisher.publish(msg)
             
         except Exception as e:
             self.get_logger().error(f'Error capturing image: {str(e)}')

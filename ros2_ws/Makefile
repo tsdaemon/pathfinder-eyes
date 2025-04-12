@@ -6,6 +6,10 @@ build:
 clean:
 	rm -rf build install log
 
-.PHONY: convert_bag
-convert_bag:
+.PHONY: convert-bag
+convert-bag:
 	rosbags-convert --src pathfinder_calibrate.bag --dst pathfinder_calibrate01.bag
+
+.PHONY: run-kalibr
+run-kalibr:
+	docker run -it --rm -v $(pwd)/../kalibr:/kalibr kalibr
