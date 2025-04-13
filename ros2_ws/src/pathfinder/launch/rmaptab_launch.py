@@ -103,26 +103,27 @@ def generate_launch_description():
 
         stereo_launch,
 
-        # Node(
-        #     package='rtabmap_ros',
-        #     executable='rtabmap',
-        #     name='rtabmap',
-        #     output='screen',
-        #     parameters=[{
-        #         'frame_id': 'base_link',
-        #         'subscribe_depth': False,
-        #         'subscribe_rgb': True,
-        #         'subscribe_stereo': True,
-        #         'approx_sync': True
-        #     }],
-        #     remappings=[
-        #         ('stereo/image_left', '/stereo/left/image_resized'),
-        #         ('stereo/image_right', '/stereo/right/image_resized'),
-        #         ('stereo/camera_info_left', '/stereo/left/camera_info_resized'),
-        #         ('stereo/camera_info_right', '/stereo/right/camera_info_resized'),
-        #         ('imu', '/imu/data')
-        #     ]
-        # ),
+        Node(
+            package='rtabmap_odom',
+            executable='stereo_odometry',
+            name='rtabmap',
+            output='screen',
+            parameters=[{
+                'frame_id': 'camera_1_optical_frame',
+                'subscribe_depth': False,
+                'subscribe_odom_info':True,
+                'subscribe_stereo': True,
+                'approx_sync': True,
+                'approx_sync_max_interval': 0.03,
+            }],
+            remappings=[
+                ('left/image_rect', '/stereo_resized/left/image_rect'),
+                ('right/image_rect', '/stereo_resized/right/image_rect'),
+                ('left/camera_info', '/stereo_resized/left/camera_info'),
+                ('right/camera_info', '/stereo_resized/right/camera_info'),
+                ('imu', '/imu/data')
+            ]
+        ),
 
         # Foxglove bridge node
         Node(
