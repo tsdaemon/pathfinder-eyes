@@ -19,6 +19,9 @@ setup(
             'pathfinder/camera/left.yaml',
             'pathfinder/camera/right.yaml',
         ]),
+        ('share/pathfinder', [
+            'pathfinder/disparity_config.yaml',
+        ]),
     ],
     install_requires=['setuptools', 'icm20948'],
     zip_safe=True,
@@ -26,7 +29,6 @@ setup(
     maintainer_email='anatolii.stehnii@gmail.com',
     description='Pathfinder',
     license='MIT',
-    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'imu_node = pathfinder.imu_node:main',

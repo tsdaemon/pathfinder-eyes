@@ -3,19 +3,28 @@ from launch_ros.actions import Node
 from launch.actions import IncludeLaunchDescription
 from launch_ros.substitutions import FindPackageShare
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from ament_index_python.packages import get_package_share_directory
+import yaml
+
 RESIZE_SCALE = 0.25
 
 def generate_launch_description():
+    launch_arguments = {
+        'namespace': 'stereo_resized',
+        'approximate_sync': 'True',
+        'use_color': 'False',
+    }
+    # Load disparity config
+    with open(get_package_share_directory('pathfinder') + '/disparity_config.yaml', 'r') as f:
+        disparity_config = yaml.safe_load(f)
+    launch_arguments.update(disparity_config)
+    
     stereo_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             FindPackageShare('stereo_image_proc'),
             '/launch/stereo_image_proc.launch.py'
         ]),
-        launch_arguments={
-            'namespace': 'stereo_resized',
-            'approximate_sync': 'True',
-            'use_color': 'False',
-        }.items()
+        launch_arguments=launch_arguments.items()
     )
 
     return LaunchDescription([
@@ -69,6 +78,7 @@ def generate_launch_description():
             parameters=[{
                 'scale_height': RESIZE_SCALE,
                 'scale_width': RESIZE_SCALE,
+                'approximate_sync': 'True',
             }],
             output='screen'  # Add output to see any errors or warnings
         ),
@@ -86,7 +96,8 @@ def generate_launch_description():
             ],
             parameters=[{
                 'scale_height': RESIZE_SCALE,
-                'scale_width': RESIZE_SCALE
+                'scale_width': RESIZE_SCALE,
+                'approximate_sync': 'True',
             }]
         ),
 
