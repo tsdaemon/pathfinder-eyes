@@ -6,7 +6,7 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
 import yaml
 
-RESIZE_SCALE = 0.25
+RESIZE_SCALE = 1.0
 
 def generate_launch_description():
     launch_arguments = {
@@ -103,27 +103,27 @@ def generate_launch_description():
 
         stereo_launch,
 
-        Node(
-            package='rtabmap_odom',
-            executable='stereo_odometry',
-            name='rtabmap',
-            output='screen',
-            parameters=[{
-                'frame_id': 'camera_1_optical_frame',
-                'subscribe_depth': False,
-                'subscribe_odom_info':True,
-                'subscribe_stereo': True,
-                'approx_sync': True,
-                'approx_sync_max_interval': 0.03,
-            }],
-            remappings=[
-                ('left/image_rect', '/stereo_resized/left/image_rect'),
-                ('right/image_rect', '/stereo_resized/right/image_rect'),
-                ('left/camera_info', '/stereo_resized/left/camera_info'),
-                ('right/camera_info', '/stereo_resized/right/camera_info'),
-                ('imu', '/imu/data')
-            ]
-        ),
+        # Node(
+        #     package='rtabmap_odom',
+        #     executable='stereo_odometry',
+        #     name='rtabmap',
+        #     output='screen',
+        #     parameters=[{
+        #         'frame_id': 'camera_1_optical_frame',
+        #         'subscribe_depth': False,
+        #         'subscribe_odom_info':True,
+        #         'subscribe_stereo': True,
+        #         'approx_sync': True,
+        #         'approx_sync_max_interval': 0.03,
+        #     }],
+        #     remappings=[
+        #         ('left/image_rect', '/stereo_resized/left/image_rect'),
+        #         ('right/image_rect', '/stereo_resized/right/image_rect'),
+        #         ('left/camera_info', '/stereo_resized/left/camera_info'),
+        #         ('right/camera_info', '/stereo_resized/right/camera_info'),
+        #         ('imu', '/imu/data')
+        #     ]
+        # ),
 
         # Foxglove bridge node
         Node(

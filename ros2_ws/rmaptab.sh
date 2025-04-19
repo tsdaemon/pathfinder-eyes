@@ -1,0 +1,12 @@
+ros2 run rtabmap_odom stereo_odometry \
+  --ros-args --remap left/image_rect:=/stereo_resized/left/image_rect \
+             --remap right/image_rect:=/stereo_resized/right/image_rect \
+             --remap left/camera_info:=/stereo_resized/left/camera_info \
+             --remap right/camera_info:=/stereo_resized/right/camera_info \
+             --remap imu:=/imu/data \
+             -p frame_id:=camera_1_optical_frame \
+             -p subscribe_depth:=false \
+             -p subscribe_odom_info:=true \
+             -p subscribe_stereo:=true \
+             -p approx_sync:=true \
+             -p approx_sync_max_interval:=0.03
