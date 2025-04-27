@@ -6,7 +6,7 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
 import yaml
 
-RESIZE_SCALE = 1.0
+RESIZE_SCALE = 0.25
 
 def generate_launch_description():
     launch_arguments = {
