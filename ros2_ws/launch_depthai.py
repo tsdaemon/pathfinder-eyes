@@ -27,7 +27,7 @@ def generate_launch_description():
                 output="screen",
                 parameters=[
                     {
-                        "name": f"{SUPERVISOR_NAMESPACE}/depthai",
+                        "name": f"/{SUPERVISOR_NAMESPACE}/depthai",
                         "heartbeat_topic": "/camera/rgb/camera_info",
                         "restart_topics": [f"{SUPERVISOR_NAMESPACE}/depthai/restart"],
                         "heartbeat_timeout": 10.0,

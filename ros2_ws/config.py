@@ -5,7 +5,6 @@ CAMERA_FRAME = "camera_link"
 SUPERVISOR_NAMESPACE = "supervisor"
 CAMERA_NAMESPACE = "camera"
 
-
 # rtabmap
 RTABMAP_PARAMS = [
     {

@@ -89,18 +89,6 @@ def generate_launch_description():
                 remappings=remappings,
                 arguments=["-d"],
             ),
-            # Foxglove bridge node
-            Node(
-                package="foxglove_bridge",
-                executable="foxglove_bridge",
-                name="foxglove_bridge",
-                output="screen",
-                parameters=[
-                    {
-                        "port": 8765  # default websocket port for Foxglove
-                    }
-                ],
-            ),
         ]
     )
 
