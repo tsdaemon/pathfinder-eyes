@@ -29,7 +29,7 @@ OAKD_LAUNCH_ARGUMENTS = {
     "name": CAMERA_NAMESPACE,
     "parent_frame": CAMERA_FRAME,
     "imu_from_descr": "true",
-    "params_file": "oakd.yaml",
+    "params_file": "config/oakd.yaml",
 }.items()
 
 # supervisor

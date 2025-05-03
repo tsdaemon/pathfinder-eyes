@@ -1,9 +1,22 @@
 #!/usr/bin/env python3
 
+from functools import partial
 import rclpy
 from rclpy.node import Node
 from xmlrpc.client import ServerProxy
 from std_msgs.msg import String, Empty
+from diagnostic_msgs.msg import DiagnosticStatus, DiagnosticArray
+
+SUPERVISOR_STATUS_TO_DIAGNOSTIC_STATUS = {
+    "STOPPED": DiagnosticStatus.ERROR,  # (0) Process stopped due to stop request or never started
+    "STARTING": DiagnosticStatus.WARN,  # (10) Process is starting due to start request
+    "RUNNING": DiagnosticStatus.OK,  # (20) Process is running
+    "BACKOFF": DiagnosticStatus.ERROR,  # (30) Process started but exited too quickly
+    "STOPPING": DiagnosticStatus.WARN,  # (40) Process is stopping due to stop request
+    "EXITED": DiagnosticStatus.ERROR,  # (100) Process exited from RUNNING state
+    "FATAL": DiagnosticStatus.ERROR,  # (200) Process could not be started successfully
+    "UNKNOWN": DiagnosticStatus.WARN,  # (1000) Process is in an unknown state
+}
 
 
 class SupervisorBridgeNode(Node):
@@ -36,6 +49,9 @@ class SupervisorBridgeNode(Node):
         self.stop_subscribers = {}
         self.start_subscribers = {}
         self.restart_subscribers = {}
+        self.diagnostics_publisher = self.create_publisher(
+            DiagnosticArray, "/diagnostics", 10
+        )
 
         # Supervisor timers
         self.bridge_initialized = False
@@ -85,19 +101,19 @@ class SupervisorBridgeNode(Node):
             self.stop_subscribers[program_name] = self.create_subscription(
                 Empty,
                 f"{self.namespace}/{program_name}/stop",
-                lambda msg: self._stop_program(program_name, msg),
+                partial(self._stop_program, program_name),
                 10,
             )
             self.start_subscribers[program_name] = self.create_subscription(
                 Empty,
                 f"{self.namespace}/{program_name}/start",
-                lambda msg: self._start_program(program_name, msg),
+                partial(self._start_program, program_name),
                 10,
             )
             self.restart_subscribers[program_name] = self.create_subscription(
                 Empty,
                 f"{self.namespace}/{program_name}/restart",
-                lambda msg: self._restart_program(program_name, msg),
+                partial(self._restart_program, program_name),
                 10,
             )
 
@@ -106,11 +122,27 @@ class SupervisorBridgeNode(Node):
         )
 
     def _poll_status(self):
+        status_array = DiagnosticArray()
+        status_array.header.stamp = self.get_clock().now().to_msg()
+        status_array.header.frame_id = "supervisor"
+        status_array.status = []
+
         for program_name in self.programs:
             process_info = self.client.supervisor.getProcessInfo(program_name)
             msg = String()
             msg.data = process_info["statename"]
-            self.status_publishers[program_name].publish(msg)
+            status = DiagnosticStatus()
+            status.name = f"/{self.namespace}/{program_name}"
+            status.level = SUPERVISOR_STATUS_TO_DIAGNOSTIC_STATUS[
+                process_info["statename"]
+            ]
+            if status.level == DiagnosticStatus.ERROR and "exitstatus" in process_info:
+                status.message = f"Exit code: {process_info['exitstatus']}"
+            else:
+                status.message = process_info["description"]
+            status_array.status.append(status)
+
+        self.diagnostics_publisher.publish(status_array)
 
     def _stop_program(self, program_name, msg):
         self.get_logger().info(f"Stopping program: {program_name}")
@@ -121,8 +153,10 @@ class SupervisorBridgeNode(Node):
         self.client.supervisor.startProcess(program_name)
 
     def _restart_program(self, program_name, msg):
-        self.get_logger().info(f"Restarting program: {program_name}")
-        self.client.supervisor.restartProcess(program_name)
+        self.get_logger().info(f"Stopping {program_name}...")
+        self.client.supervisor.stopProcess(program_name)
+        self.get_logger().info(f"Restarting {program_name}...")
+        self.client.supervisor.startProcess(program_name)
 
 
 def main(args=None):

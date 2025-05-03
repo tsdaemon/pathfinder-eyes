@@ -5,6 +5,7 @@ from rclpy.node import Node
 from std_msgs.msg import Empty
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 from rosidl_runtime_py.utilities import get_message
+from ros2node.api import get_node_names
 
 import time
 
@@ -74,7 +75,9 @@ class WatchdogNode(Node):
                 topic_type = types[0]
                 break
         else:
-            self.get_logger().error(f"Heartbeat topic {self.heartbeat_topic} not found")
+            self.get_logger().warning(
+                f"Heartbeat topic {self.heartbeat_topic} not found"
+            )
             return
 
         try:
@@ -138,7 +141,7 @@ class WatchdogNode(Node):
         status_msg = DiagnosticArray()
         status_msg.header.stamp = self.get_clock().now().to_msg()
         status = DiagnosticStatus()
-        status.name = "/" + self.name
+        status.name = self.name
         status.level = self.status
         if (
             status.level == DiagnosticStatus.ERROR
@@ -151,8 +154,18 @@ class WatchdogNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = WatchdogNode()
+
     try:
+        list_nodes = rclpy.create_node("list_nodes_example")
+        available_nodes = get_node_names(node=list_nodes, include_hidden_nodes=True)
+        node_names = [name for name, _, _ in available_nodes]
+        list_nodes.destroy_node()
+
+        node = WatchdogNode()
+        # if there is more than one watchdog node, raise an error
+        if node_names.count(node.get_name()) > 1:
+            raise Exception(f"{node.get_name()} already started")
+
         rclpy.spin(node)
     except KeyboardInterrupt:
         pass
