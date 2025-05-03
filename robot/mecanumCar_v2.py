@@ -13,6 +13,8 @@ import array
 import time
 import rp2
 
+SPEED = 60
+
 
 trigger = Pin(3, Pin.OUT)
 echo = Pin(4, Pin.IN)
@@ -77,10 +79,10 @@ class Driver(object):
         self.i2c = i2c
         self.addr = addr
         self.brightness = 0.1
-        self.speed_Upper_L = 80
-        self.speed_Lower_L = 80
-        self.speed_Upper_R = 80
-        self.speed_Lower_R = 80
+        self.speed_Upper_L = SPEED
+        self.speed_Lower_L = SPEED
+        self.speed_Upper_R = SPEED
+        self.speed_Lower_R = SPEED
         time.sleep(1)
 
     # Set servo angle

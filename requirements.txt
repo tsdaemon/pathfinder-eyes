@@ -2,3 +2,10 @@ opencv-python
 numpy>=1.24,<2
 depthai
 pymavlink
+colcon-core
+colcon-common-extensions
+rclpy
+lark
+rosbags>=0.9.1
+supervisor
+xmlrpc

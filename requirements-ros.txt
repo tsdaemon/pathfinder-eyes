@@ -1,5 +1,0 @@
-colcon-core
-colcon-common-extensions
-rclpy
-lark
-rosbags>=0.9.1

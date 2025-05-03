@@ -4,5 +4,4 @@ sudo apt install -y ros-jazzy-robot-localization \
     ros-jazzy-foxglove-bridge \
     ros-jazzy-rtabmap-ros \
     ros-jazzy-image-pipeline \
-    ros-jazzy-topic-tools 
-    
+    ros-jazzy-topic-tools \
