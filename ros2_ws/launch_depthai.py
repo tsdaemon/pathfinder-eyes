@@ -2,12 +2,10 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription, LaunchService
-from launch.actions import (
-    IncludeLaunchDescription,
-)
+from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-
-from config import OAKD_LAUNCH_ARGUMENTS
+from launch_ros.actions import Node
+from config import OAKD_LAUNCH_ARGUMENTS, SUPERVISOR_NAMESPACE
 
 
 def generate_launch_description():
@@ -21,6 +19,20 @@ def generate_launch_description():
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(launch_file),
                 launch_arguments=OAKD_LAUNCH_ARGUMENTS,
+            ),
+            Node(
+                package="watchdog",
+                executable="watchdog",
+                name="watchdog_depthai",
+                output="screen",
+                parameters=[
+                    {
+                        "name": "depthai",
+                        "heartbeat_topic": "/camera/rgb/camera_info",
+                        "restart_topics": [f"{SUPERVISOR_NAMESPACE}/depthai/restart"],
+                        "heartbeat_timeout": 10.0,
+                    }
+                ],
             ),
         ]
     )

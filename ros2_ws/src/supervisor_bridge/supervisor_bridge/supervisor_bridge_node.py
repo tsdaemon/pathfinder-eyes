@@ -3,7 +3,7 @@
 import rclpy
 from rclpy.node import Node
 from xmlrpc.client import ServerProxy
-from std_msgs.msg import String
+from std_msgs.msg import String, Empty
 
 
 class SupervisorBridgeNode(Node):
@@ -83,19 +83,19 @@ class SupervisorBridgeNode(Node):
 
             # Create subscribers
             self.stop_subscribers[program_name] = self.create_subscription(
-                String,
+                Empty,
                 f"{self.namespace}/{program_name}/stop",
                 lambda msg: self._stop_program(program_name, msg),
                 10,
             )
             self.start_subscribers[program_name] = self.create_subscription(
-                String,
+                Empty,
                 f"{self.namespace}/{program_name}/start",
                 lambda msg: self._start_program(program_name, msg),
                 10,
             )
             self.restart_subscribers[program_name] = self.create_subscription(
-                String,
+                Empty,
                 f"{self.namespace}/{program_name}/restart",
                 lambda msg: self._restart_program(program_name, msg),
                 10,

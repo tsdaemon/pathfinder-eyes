@@ -5,3 +5,4 @@ sudo apt install -y ros-jazzy-robot-localization \
     ros-jazzy-rtabmap-ros \
     ros-jazzy-image-pipeline \
     ros-jazzy-topic-tools \
+    ros-jazzy-diagnostics
