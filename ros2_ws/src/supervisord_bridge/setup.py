@@ -1,11 +1,11 @@
-from setuptools import find_packages, setup
+from setuptools import setup
 
-package_name = "watchdog"
+package_name = "supervisord_bridge"
 
 setup(
     name=package_name,
     version="0.0.0",
-    packages=find_packages(exclude=["test"]),
+    packages=[package_name],
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
@@ -14,11 +14,12 @@ setup(
     zip_safe=True,
     maintainer="anatolii",
     maintainer_email="tsdaemon@gmail.com",
-    description="Watchdog node for monitoring system health",
+    description="Bridge package for supervisord communication",
     license="Apache-2.0",
     entry_points={
         "console_scripts": [
-            "watchdog = watchdog.watchdog_node:main",
+            "supervisord_bridge = supervisord_bridge.supervisord_bridge_node:main",
+            "watchdog = supervisord_bridge.watchdog_node:main",
         ],
     },
 )

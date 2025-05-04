@@ -2,7 +2,7 @@
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Empty
+from std_msgs.msg import String
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 from rosidl_runtime_py.utilities import get_message
 from ros2node.api import get_node_names
@@ -15,26 +15,25 @@ class WatchdogNode(Node):
         super().__init__("watchdog")
 
         # Declare parameters
-        self.declare_parameter("name", "")
+        self.declare_parameter("program_name", "")
         self.declare_parameter("heartbeat_topic", "")
-        self.declare_parameter("restart_topics", [""])
         self.declare_parameter("max_restarts", 3)
         self.declare_parameter("heartbeat_timeout", 5.0)  # seconds
         self.declare_parameter("poll_interval", 1.0)  # seconds
+
         # Get parameters
+        self.program_name = (
+            self.get_parameter("program_name").get_parameter_value().string_value
+        )
+        if self.program_name == "":
+            self.get_logger().error("Program name is not set")
+            return
         self.heartbeat_topic = (
             self.get_parameter("heartbeat_topic").get_parameter_value().string_value
         )
         if self.heartbeat_topic == "":
             self.get_logger().error("Heartbeat topic is not set")
             return
-
-        self.name = self.get_parameter("name").get_parameter_value().string_value
-        self.restart_topics = (
-            self.get_parameter("restart_topics")
-            .get_parameter_value()
-            .string_array_value
-        )
         self.max_restarts = (
             self.get_parameter("max_restarts").get_parameter_value().integer_value
         )
@@ -51,18 +50,13 @@ class WatchdogNode(Node):
         self.status = DiagnosticStatus.STALE
 
         # Create publishers for restart topics
-        self.restart_publishers = []
-        for topic in self.restart_topics:
-            if topic == "":
-                continue
-            pub = self.create_publisher(Empty, topic, 10)
-            self.restart_publishers.append(pub)
+        self.restart_pub = self.create_publisher(String, "restart", 10)
 
         # Create status publisher
         self.status_pub = self.create_publisher(DiagnosticArray, "/diagnostics", 10)
 
         # Create timer for checking heartbeat
-        self.timer = self.create_timer(1.0, self.check_heartbeat)
+        self.timer = self.create_timer(self.poll_interval, self.check_heartbeat)
         self.init_timer = self.create_timer(self.poll_interval, self.init_subscription)
 
     def init_subscription(self):
@@ -93,12 +87,11 @@ class WatchdogNode(Node):
         )
 
         self.get_logger().info(f"Started monitoring {self.heartbeat_topic}")
-        self.get_logger().info(f"Restart topics: {self.restart_topics}")
         self.get_logger().info(f"Max restarts: {self.max_restarts}")
         self.get_logger().info(f"Heartbeat timeout: {self.heartbeat_timeout} seconds")
         self.init_timer.cancel()
 
-    def heartbeat_callback(self, msg):
+    def heartbeat_callback(self, _):
         self.last_heartbeat = time.time()
         if self.status == DiagnosticStatus.WARN:
             self.get_logger().info("Recovered from stale status")
@@ -108,6 +101,8 @@ class WatchdogNode(Node):
 
         self.status = DiagnosticStatus.OK
         self.restart_count = 0
+        if self.timer.is_canceled():
+            self.timer = self.create_timer(self.poll_interval, self.check_heartbeat)
 
     def check_heartbeat(self):
         current_time = time.time()
@@ -119,35 +114,32 @@ class WatchdogNode(Node):
         ):
             self.restart_count += 1
 
-            if not self.restart_publishers:
-                self.get_logger().error("No restart publishers found")
+            if not self.restart_pub:
+                self.get_logger().warning("No restart publishers found")
                 self.status = DiagnosticStatus.ERROR
+
             elif self.restart_count > self.max_restarts:
                 self.status = DiagnosticStatus.ERROR
                 self.get_logger().error("Declared dead - max restarts reached")
+                self.timer.cancel()
             else:
                 self.status = DiagnosticStatus.WARN
                 self.get_logger().warning(
                     f"Heartbeat timeout! Restart attempt {self.restart_count}/{self.max_restarts}"
                 )
-                # Publish restart messages
-                for pub in self.restart_publishers:
-                    pub.publish(Empty())
+                # Publish restart message
+                self.restart_pub.publish(String(data=self.program_name))
                 # Reset heartbeat timeout
                 self.last_heartbeat = time.time()
-                self.get_logger().info("Restart commands sent")
+                self.get_logger().info("Restart command sent")
 
         # Publish current status
         status_msg = DiagnosticArray()
         status_msg.header.stamp = self.get_clock().now().to_msg()
         status = DiagnosticStatus()
-        status.name = self.name
+        status.name = f"{self.get_namespace()}/{self.program_name}/heartbeat"
         status.level = self.status
-        if (
-            status.level == DiagnosticStatus.ERROR
-            or status.level == DiagnosticStatus.WARN
-        ):
-            status.message = f"Heartbeat timeout: {time_since_heartbeat} seconds"
+        status.message = f"Last heartbeat: {time_since_heartbeat:.3f}s ago"
         status_msg.status.append(status)
         self.status_pub.publish(status_msg)
 
@@ -162,7 +154,7 @@ def main(args=None):
         list_nodes.destroy_node()
 
         node = WatchdogNode()
-        # if there is more than one watchdog node, raise an error
+        # if there is more than one watchdog node with the same name, raise an error
         if node_names.count(node.get_name()) > 1:
             raise Exception(f"{node.get_name()} already started")
 

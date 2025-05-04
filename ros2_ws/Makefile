@@ -1,6 +1,6 @@
 .PHONY: build
 build:
-	python3 -m colcon build --packages-select pico_control supervisor_bridge watchdog
+	python3 -m colcon build --packages-select pico_control supervisord_bridge
 
 .PHONY: clean
 clean:

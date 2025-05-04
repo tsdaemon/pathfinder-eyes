@@ -5,12 +5,12 @@ aggregation_params_filepath = "config/diagnostics_aggregation.yaml"
 
 
 def generate_launch_description():
-    aggregator = Node(
-        package="diagnostic_aggregator",
-        executable="aggregator_node",
-        output="screen",
-        parameters=[aggregation_params_filepath],
-    )
+    # aggregator = Node(
+    #     package="diagnostic_aggregator",
+    #     executable="aggregator_node",
+    #     output="screen",
+    #     parameters=[aggregation_params_filepath],
+    # )
 
     cpu_monitor = Node(
         package="diagnostic_common_diagnostics",
@@ -28,7 +28,7 @@ def generate_launch_description():
 
     return LaunchDescription(
         [
-            aggregator,
+            # aggregator,
             cpu_monitor,
             memory_monitor,
         ]

@@ -1,9 +1,8 @@
 # Frames
-CAMERA_FRAME = "camera_link"
+CAMERA_FRAME = "oak-d-base-frame"
 
-# Namespace
+# Namespaces
 SUPERVISOR_NAMESPACE = "supervisor"
-CAMERA_NAMESPACE = "camera"
 
 # rtabmap
 RTABMAP_PARAMS = [
@@ -25,11 +24,17 @@ RTABMAP_PARAMS = [
 
 # oakd
 OAKD_LAUNCH_ARGUMENTS = {
-    "name": CAMERA_NAMESPACE,
     "parent_frame": CAMERA_FRAME,
     "imu_from_descr": "true",
     "params_file": "config/oakd.yaml",
 }.items()
+
+OAKD_INERTIAL_LAUNCH_ARGUMENTS = {
+    "depth_aligned": "false",
+    "enableRviz": "false",
+    "monoResolution": "400p",
+    "params_file": "oakd.yaml",
+}
 
 # supervisor
 SUPERVISOR_XMLRPC_URL = "http://localhost:9001/RPC2"

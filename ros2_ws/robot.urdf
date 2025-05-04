@@ -14,7 +14,7 @@
   </link>
 
   <!-- Camera link -->
-  <link name="camera_link">
+  <link name="oak-d-base-frame">
     <visual>
       <geometry>
         <box size="0.1 0.1 0.1"/>
@@ -28,7 +28,7 @@
   <!-- Fixed joint from base to camera -->
   <joint name="camera_joint" type="fixed">
     <parent link="base_link"/>
-    <child link="camera_link"/>
+    <child link="oak-d-base-frame"/>
     <origin xyz="0 0.5 0.5" rpy="0 0 0"/>
   </joint>
 
