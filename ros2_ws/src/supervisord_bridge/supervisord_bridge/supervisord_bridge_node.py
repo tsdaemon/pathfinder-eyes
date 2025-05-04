@@ -77,7 +77,7 @@ class SupervisorBridgeNode(Node):
             program_name = process_info["name"]
 
             status = DiagnosticStatus()
-            status.name = f"{self.get_namespace()}/{program_name}"
+            status.name = f"{self.get_namespace()}: {program_name}"
             status.level = SUPERVISOR_STATUS_TO_DIAGNOSTIC_STATUS[
                 process_info["statename"]
             ]

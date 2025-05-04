@@ -137,7 +137,7 @@ class WatchdogNode(Node):
         status_msg = DiagnosticArray()
         status_msg.header.stamp = self.get_clock().now().to_msg()
         status = DiagnosticStatus()
-        status.name = f"{self.get_namespace()}/{self.program_name}/heartbeat"
+        status.name = f"{self.get_namespace()}: {self.program_name}: heartbeat"
         status.level = self.status
         status.message = f"Last heartbeat: {time_since_heartbeat:.3f}s ago"
         status_msg.status.append(status)

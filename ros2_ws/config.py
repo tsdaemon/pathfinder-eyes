@@ -9,13 +9,11 @@ RTABMAP_COMMON_PARAMS = {
     "odom_frame_id": "odom",
     "map_frame_id": "map",
     "publish_tf": True,
-    "Vis/CorType": "1",
-    "Vis/MaxFeatures": "500",
     "Odom/ResetCountdown": "1",
     "Rtabmap/StartNewMapOnLoopClosure": "true",
-    "Mem/IncrementalMemory": "false",
     "RGBD/ForceOdom3DoF": "false",
-    "Reg/Force3DoF": "false",
+    "Reg/Force3DoF": "true",
+    "Optimizer/Slam2D": "true",
     "wait_imu_to_init": True,
 }
 
@@ -25,6 +23,11 @@ RTABMAP_PARAMS = [
         "subscribe_depth": True,
         "subscribe_odom_info": True,
         "approx_sync": True,
+        "GFTT/MinDistance": "10",
+        "Vis/CorType": "1",
+        "OdomF2M/MaxSize": "800",
+        "Vis/MaxFeatures": "500",
+        "Odom/Strategy": "1",
     }
     | RTABMAP_COMMON_PARAMS
 ]
@@ -49,13 +52,13 @@ OAKD_LAUNCH_ARGUMENTS = {
     "name": OAKD_NAME,
     "imu_from_descr": "true",
     "params_file": "config/oakd.yaml",
+    "publish_tf_from_calibration": "true",
 }
 
 OAKD_INERTIAL_LAUNCH_ARGUMENTS = {
     "depth_aligned": "false",
     "enableRviz": "false",
     "monoResolution": "400p",
-    "params_file": "oakd.yaml",
 }
 
 # supervisor
