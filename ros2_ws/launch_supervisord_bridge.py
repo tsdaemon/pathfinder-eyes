@@ -19,20 +19,20 @@ def generate_launch_description():
                     }
                 ],
             ),
-            Node(
-                package="supervisord_bridge",
-                executable="watchdog",
-                name="watchdog_depthai",
-                namespace=SUPERVISOR_NAMESPACE,
-                output="screen",
-                parameters=[
-                    {
-                        "program_name": "depthai",
-                        "heartbeat_topic": "/stereo/camera_info",
-                        "heartbeat_timeout": 10.0,
-                    }
-                ],
-            ),
+            # Node(
+            #     package="supervisord_bridge",
+            #     executable="watchdog",
+            #     name="watchdog_depthai",
+            #     namespace=SUPERVISOR_NAMESPACE,
+            #     output="screen",
+            #     parameters=[
+            #         {
+            #             "program_name": "depthai",
+            #             "heartbeat_topic": "/stereo/camera_info",
+            #             "heartbeat_timeout": 10.0,
+            #         }
+            #     ],
+            # ),
         ]
     )
 
