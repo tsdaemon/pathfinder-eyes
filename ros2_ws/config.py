@@ -12,8 +12,8 @@ RTABMAP_COMMON_PARAMS = {
     "Odom/ResetCountdown": "1",
     "Rtabmap/StartNewMapOnLoopClosure": "true",
     "RGBD/ForceOdom3DoF": "false",
-    "Reg/Force3DoF": "true",
-    "Optimizer/Slam2D": "true",
+    # "Reg/Force3DoF": "true",
+    # "Optimizer/Slam2D": "true",
     "wait_imu_to_init": True,
 }
 

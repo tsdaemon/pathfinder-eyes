@@ -1,1 +1,1 @@
-multipath=off dwc_otg.lpm_enable=0 console=tty1 root=LABEL=writable rootfstype=ext4 rootwait fixrtc cfg80211.ieee80211_regdom=GB
+multipath=off dwc_otg.lpm_enable=0 console=tty1 root=LABEL=writable rootfstype=ext4 rootwait modules-load=dwc2,g_ether fixrtc cfg80211.ieee80211_regdom=GB
