@@ -1,0 +1,1 @@
+https://github.com/verxion/RaspberryPi/blob/main/Pi5-ethernet-and-power-over-usbc.md
