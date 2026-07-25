@@ -10,7 +10,7 @@ setup(
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
     ],
-    install_requires=["setuptools", "pymavlink"],
+    install_requires=["setuptools", "pyserial"],
     zip_safe=True,
     maintainer="anatolii",
     maintainer_email="tsdaemon@gmail.com",
@@ -18,7 +18,7 @@ setup(
     license="",
     entry_points={
         "console_scripts": [
-            "vel_to_mavlink = pico_control.vel_to_mavlink:main",
+            "vel_to_serial = pico_control.vel_to_serial:main",
         ],
     },
 )

@@ -8,8 +8,8 @@ def generate_launch_description():
         [
             Node(
                 package="pico_control",
-                executable="vel_to_mavlink",
-                name="vel_to_mavlink",
+                executable="vel_to_serial",
+                name="vel_to_serial_node",
                 output="screen",
                 parameters=[{"port": "/dev/ttyAMA0"}],
             ),
