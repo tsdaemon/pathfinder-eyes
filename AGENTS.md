@@ -70,8 +70,6 @@ OAK-D and Pico are physically attached and can be live. Concretely:
 
 ## Known rough edges (don't be surprised by these, don't "fix" them silently)
 
-- TF tree conflict between `robot.urdf` and RTAB-Map's `frame_id` — see
-  [docs/depthai.md](docs/depthai.md#known-issue-tf-tree). Not yet resolved.
 - The supervisord watchdog and the diagnostic aggregator are both wired up in code but
   commented out — see [docs/supervisord.md](docs/supervisord.md).
 - supervisord's XML-RPC interface listens on `0.0.0.0:9001` with no auth. Known, accepted for

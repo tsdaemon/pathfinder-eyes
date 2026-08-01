@@ -1,11 +1,10 @@
 # Constants
-CAMERA_FRAME = "oak-d-base-frame"
 OAKD_NAME = "oakd"
 SUPERVISOR_NAMESPACE = "supervisor"
 
 # rtabmap
 RTABMAP_COMMON_PARAMS = {
-    "frame_id": CAMERA_FRAME,
+    "frame_id": "base_link",
     "odom_frame_id": "odom",
     "map_frame_id": "map",
     "publish_tf": True,

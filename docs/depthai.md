@@ -62,14 +62,15 @@ container and using RGB+depth rather than right+depth. It was benchmarked as too
 the Pi — the "inertial" pipeline above is the one that's actually been run. Both are compared
 in [docs/notes/2025.05.04.md](notes/2025.05.04.md) and [docs/notes/2025.05.10.md](notes/2025.05.10.md).
 
-## Known issue: TF tree
+## TF tree
 
-[ros2_ws/robot.urdf](../ros2_ws/robot.urdf) parents `oak-d-base-frame` under `base_link`
-with a placeholder offset (`xyz="0 0.5 0.5"` — not the real mounting position), while
-RTAB-Map also publishes `odom → oak-d-base-frame` (`frame_id` in `config.py`). That gives one
-frame two parents. Fix by either pointing RTAB-Map's `frame_id` at `base_link`, or dropping
-the camera link from the URDF and letting depthai's own robot_description own it — and
-measure the actual camera offset while at it.
+`oak-d-base-frame` used to have two parents: [ros2_ws/robot.urdf](../ros2_ws/robot.urdf)
+parented it under `base_link`, while RTAB-Map separately published `odom → oak-d-base-frame`
+(`frame_id` in `config.py`). Fixed by pointing RTAB-Map's `frame_id` at `base_link` instead,
+so RTAB-Map owns `odom → base_link` and the URDF's static joint is the sole parent of
+`oak-d-base-frame`. Tree is now `map → odom → base_link → oak-d-base-frame → camera optical
+frames`. The camera offset in the URDF is now the real measured mounting position (see the
+comment on `base_link` in `robot.urdf` for the physical reference point it's measured from).
 
 ## History
 

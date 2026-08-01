@@ -2,10 +2,15 @@
 <robot name="simple_camera_bot">
 
   <!-- Base link -->
+  <!-- Origin = center of the 0.18x0.15 footprint, at ground level (Z=0).
+       Physical reference: from the front-right corner of the chassis footprint
+       (ground level), base_link is 0.09m back (-X) and 0.075m left (+Y).
+       Measure all other joints (e.g. camera_joint below) from this point. -->
   <link name="base_link">
     <visual>
+      <origin xyz="0 0 0.09" rpy="0 0 0"/>
       <geometry>
-        <box size="0.4 0.4 0.1"/>
+        <box size="0.18 0.15 0.18"/>
       </geometry>
       <material name="gray">
         <color rgba="0.5 0.5 0.5 1.0"/>
@@ -29,7 +34,7 @@
   <joint name="camera_joint" type="fixed">
     <parent link="base_link"/>
     <child link="oak-d-base-frame"/>
-    <origin xyz="0 0.5 0.5" rpy="0 0 0"/>
+    <origin xyz="0.08 0 0.095" rpy="0 0 0"/>
   </joint>
 
 </robot>
