@@ -1,10 +1,8 @@
-from ir import ir_loop
-from serial_control import serial_loop
+from control import control_loop
 
 
 try:
     while True:
-        ir_loop()
-        serial_loop()
+        control_loop()
 except KeyboardInterrupt:
     print("Interrupted, returning to REPL")

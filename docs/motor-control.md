@@ -43,9 +43,11 @@ DRIFT_L | DRIFT_R
 LED:r,g,b
 ```
 
-Pico side: [robot/serial_control.py](../robot/serial_control.py) reads lines off UART0 and
-dispatches straight to the matching `mecanumCar` method. If no command arrives for 1s it calls
-`stop()` — a dead link should not leave the robot driving blind.
+Pico side: [robot/control.py](../robot/control.py) owns dispatch and arbitration between the
+two input sources (serial and IR, see below); [robot/serial_control.py](../robot/serial_control.py)
+only parses UART0 lines and hands them to `control.py`. If no serial command arrives for 1s
+while serial is the active source, `control.py` calls `stop()` — a dead link should not leave
+the robot driving blind.
 
 ROS side: [vel_to_serial.py](../ros2_ws/src/pico_control/pico_control/vel_to_serial.py)
 subscribes to `cmd_vel` (`geometry_msgs/Twist`) and picks the closest matching command from
@@ -61,17 +63,6 @@ cd ros2_ws && python launch_pico_control.py     # needs /dev/ttyAMA0 and a flash
 This isn't in `supervisord.conf` yet, so it doesn't start with the rest of the stack — see
 [docs/supervisord.md](supervisord.md) for the process list.
 
-## Flashing the Pico
-
-```bash
-cd robot
-make flash          # mpremote fs cp *.py : && reset
-make repl           # interactive REPL
-make test-uart      # flashes test_uart.py as main.py — prints to UART every second, for wiring checks
-```
-
-Port comes from [.env](../.env) (`PORT=/dev/ttyACM0`).
-
 ## What's not wired up yet
 
 - Speed is a fixed constant on the Pico (`SPEED = 60` in `mecanumCar_v2.py`) — `cmd_vel`
@@ -80,9 +71,7 @@ Port comes from [.env](../.env) (`PORT=/dev/ttyACM0`).
 - The diagonal/drift moves and LED command are implemented on both ends but nothing today
   generates `cmd_vel` values that would trigger them (the mapping only ever emits the 6 axis
   directions).
-- The IR remote ([robot/ir.py](../robot/ir.py)) still works as an independent, ROS-free
-  fallback control path — same chassis driver, decoded straight from the receiver pin.
-
-Earlier iterations of this used a hand-rolled MAVLink-framed protocol and, before that,
-considered adopting a third-party firmware. Both were abandoned as more complexity than this
-robot needs — see [docs/notes/](notes/) if curious about that history.
+- The IR remote ([robot/ir.py](../robot/ir.py)) works as an independent, ROS-free fallback
+  control path, decoded straight from the receiver pin. `control.py` arbitrates between it and
+  serial: any IR button press takes exclusive control (serial input is still read so it doesn't
+  desync, but ignored) until the `*` button releases control back to serial.
