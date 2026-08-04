@@ -14,6 +14,8 @@ setup/run commands, then the topic docs:
 - [docs/motor-control.md](docs/motor-control.md) — Pico wiring, protocol, firmware
 - [docs/remote_control.md](docs/remote_control.md) — visualization, driving, planning from a laptop
 - [docs/notes/](docs/notes/) — dated engineering journal, oldest decisions to newest
+- [docs/plans/](docs/plans/) — implementation plans for in-progress multi-step work
+- [docs/tasks/](docs/tasks/) — short standalone reminders/follow-ups, not full plans
 
 ## Current goal
 
@@ -89,3 +91,6 @@ OAK-D and Pico are physically attached and can be live. Concretely:
   ends of the same hand-written line protocol with no shared schema.
 - Prefer editing existing docs over adding new markdown files; if a new topic genuinely
   doesn't fit `depthai` / `supervisord` / `motor-control`, ask before creating a new doc file.
+- Keep plans in the repo, not just in a local tool's plan-mode scratch file — write
+  multi-step implementation plans to `docs/plans/` (one file per plan, descriptive filename)
+  so they survive across machines/sessions and are visible in `git log`/PRs.
