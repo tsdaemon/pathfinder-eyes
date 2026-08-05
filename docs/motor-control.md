@@ -104,6 +104,13 @@ This isn't in `supervisord.conf` yet, so it doesn't start with the rest of the s
 - The `SPEED` PWM ceiling is still a single tuned constant, not something `drive()` varies per
   call — full-scale `vx`/`vy`/`wz` all drive at the same top speed there's no separate
   fine/coarse gear.
+- Confirmed by testing: rotation (`wz`) needs to be close to full deflection to actually turn
+  the chassis — partial values spin the wheels audibly without moving it, most likely because
+  in-place rotation scrubs all 4 wheels sideways against the floor and needs more torque than
+  straight-line travel to overcome that friction. `drive()` doesn't compensate for this (linear
+  scale all the way down to zero); for now this is worked around client-side (Teleop's angular
+  scale set high enough that normal input reaches near-full `wz`). A cleaner fix later would be
+  a minimum-effective-PWM floor in `drive()` itself for the rotation term.
 - The discrete diagonal/drift moves (`LU_Move`, `drift_left`, etc.) and IR's discrete moves are
   no longer reachable from serial at all now that the protocol is `VEL:`/`LED:` only — true
   diagonal motion happens instead as a natural side effect of the continuous mixer (nonzero
