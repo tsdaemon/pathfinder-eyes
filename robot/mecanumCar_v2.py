@@ -133,6 +133,27 @@ class Driver(object):
         else:
             self.speed_Lower_R = speed_Lower_R
 
+    # Continuous mecanum mix: blend forward/back (vx), strafe (vy), and
+    # rotate (wz), each in [-1, 1], into per-wheel PWM. Alongside, not
+    # replacing, the discrete moves below - ir.py calls those directly.
+    def drive(self, vx, vy, wz):
+        fl = vx - vy - wz
+        fr = vx + vy + wz
+        bl = vx + vy - wz
+        br = vx - vy + wz
+
+        largest = max(abs(fl), abs(fr), abs(bl), abs(br))
+        if largest > 1:
+            fl /= largest
+            fr /= largest
+            bl /= largest
+            br /= largest
+
+        self.Motor_Upper_L(1 if fl >= 0 else 0, round(abs(fl) * SPEED))
+        self.Motor_Upper_R(1 if fr >= 0 else 0, round(abs(fr) * SPEED))
+        self.Motor_Lower_L(1 if bl >= 0 else 0, round(abs(bl) * SPEED))
+        self.Motor_Lower_R(1 if br >= 0 else 0, round(abs(br) * SPEED))
+
     # Stop
     def stop(self):
         self.Motor_Upper_L(0, 0)

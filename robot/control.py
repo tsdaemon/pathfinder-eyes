@@ -1,7 +1,6 @@
 from mecanumCar_v2 import mecanumCar
 from ir import ir_loop
 from serial_control import serial_loop, send_status
-import time
 
 IR_ACTIONS = {
     "Up": mecanumCar.Advance,
@@ -11,34 +10,12 @@ IR_ACTIONS = {
     "Ok": mecanumCar.stop,
 }
 
-SERIAL_ACTIONS = {
-    "FWD": mecanumCar.Advance,
-    "BACK": mecanumCar.Back,
-    "LEFT": mecanumCar.Turn_Left,
-    "RIGHT": mecanumCar.Turn_Right,
-    "STOP": mecanumCar.stop,
-    "STRAFE_L": mecanumCar.L_Move,
-    "STRAFE_R": mecanumCar.R_Move,
-    "DIAG_LU": mecanumCar.LU_Move,
-    "DIAG_LD": mecanumCar.LD_Move,
-    "DIAG_RU": mecanumCar.RU_Move,
-    "DIAG_RD": mecanumCar.RD_Move,
-    "DRIFT_L": mecanumCar.drift_left,
-    "DRIFT_R": mecanumCar.drift_right,
-}
-
 # While a human is actively driving with the IR remote, serial (ROS/UART) input
 # is ignored entirely so the two sources can't fight over the motors. Pressing
 # "*" hands control back to serial.
 IR_RELEASE_BUTTON = "*"
 
-# Stop if serial goes quiet for a while, so a lost UART link does not leave the
-# robot driving into something. Only armed once serial has actually sent a real
-# drive command, and only checked while serial is the active source.
-SERIAL_TIMEOUT_MS = 1000
-
 _ir_active = False
-_last_serial_command_time = None
 _last_reported_fault = None
 
 
@@ -75,8 +52,6 @@ def _handle_ir(command):
 
 
 def _handle_serial_line(line):
-    global _last_serial_command_time
-
     print("Serial line:", line)
 
     if not line:
@@ -88,12 +63,12 @@ def _handle_serial_line(line):
         mecanumCar.pixels_show()
         return
 
-    action = SERIAL_ACTIONS.get(line)
-    if action:
-        action()
-        _last_serial_command_time = time.ticks_ms()
-    else:
-        print("Unknown command:", line)
+    if line.startswith("VEL:"):
+        vx, vy, wz = (float(v) for v in line[4:].split(","))
+        mecanumCar.drive(vx, vy, wz)
+        return
+
+    print("Unknown command:", line)
 
 
 def control_loop():

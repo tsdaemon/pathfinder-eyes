@@ -12,10 +12,13 @@
 - [x] End-to-end motor path confirmed working: I2C → STC8G1K08 driver chip → all 4 wheels,
       driven via IR command (`mecanumCar.Advance()` actually drives the car).
 
-- [ ] Continuous-velocity mecanum mixer (`VEL:vx,vy,wz` protocol) — `cmd_vel` magnitude is
-      still ignored, only direction matters. This is the actual "teach the robot to move" step.
-      Fully scoped in [docs/plans/motor-mixer-and-joystick-control.md](../plans/motor-mixer-and-joystick-control.md)
-      Part 1, not yet implemented.
+- [x] Continuous-velocity mecanum mixer (`VEL:vx,vy,wz` protocol) — `cmd_vel` magnitude now
+      drives wheel PWM via `Driver.drive()`, confirmed working end-to-end through the Foxglove
+      Teleop panel. Fully scoped in
+      [docs/plans/motor-mixer-and-joystick-control.md](../plans/motor-mixer-and-joystick-control.md)
+      Part 1. One tuning note from testing: rotation needs `wz` close to full deflection to
+      actually overcome friction and turn (Teleop's default angular scale was too low) — see
+      [docs/motor-control.md](../motor-control.md)'s "what's not wired up yet".
 - [ ] Joystick control (Part 2 of the same plan).
 - [ ] `pico_control` (and eventually a joystick launch) registered in `supervisord.conf` —
       still hand-launched.

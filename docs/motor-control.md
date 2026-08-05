@@ -9,10 +9,13 @@
   (`/dev/ttyACM0`, shows up as `2e8a:0005`).
 - **18650 battery pack** powers the motors and driver board (separate from the Pi's supply).
 
-Vendor driver: [robot/mecanumCar_v2.py](../robot/mecanumCar_v2.py) — this is Keyestudio's own
+Vendor driver: [robot/mecanumCar_v2.py](../robot/mecanumCar_v2.py) — mostly Keyestudio's own
 code (kept close to original), exposing directional moves (`Advance`, `Back`, `Turn_Left`,
 `Turn_Right`, `L_Move`/`R_Move` strafe, four diagonal moves, `drift_left`/`drift_right`),
-`stop`, LED control, servo angle, and ultrasonic distance.
+`stop`, LED control, and ultrasonic distance — these are the discrete moves `ir.py` calls
+directly. On top of those, `drive(vx, vy, wz)` is our own addition: a continuous mecanum mix
+(see Protocol below) that blends forward/back, strafe, and rotate into per-wheel PWM, instead
+of snapping to one discrete move at a fixed speed.
 
 ## Wiring: Pi ↔ Pico over UART
 
@@ -36,16 +39,18 @@ Plain ASCII, one command per line, newline-terminated, no framing/checksum — d
 simple as the link allows:
 
 ```
-FWD | BACK | LEFT | RIGHT | STOP
-STRAFE_L | STRAFE_R
-DIAG_LU | DIAG_LD | DIAG_RU | DIAG_RD
-DRIFT_L | DRIFT_R
+VEL:vx,vy,wz     # each in [-1, 1] - forward/back, strafe, rotate
 LED:r,g,b
 ```
 
+`VEL:0,0,0` is how you stop — there's no separate `STOP` token. `vx`/`vy`/`wz` map straight onto
+`Driver.drive()`'s mecanum mix: `fl = vx-vy-wz`, `fr = vx+vy+wz`, `bl = vx+vy-wz`, `br = vx-vy+wz`,
+normalized so nothing clips, then scaled to PWM against the `SPEED` ceiling.
+
 Pico side: [robot/control.py](../robot/control.py) owns dispatch and arbitration between the
 two input sources (serial and IR, see below); [robot/serial_control.py](../robot/serial_control.py)
-only parses UART0 lines and hands them to `control.py`.
+only parses UART0 lines and hands them to `control.py`. Serial only ever calls `drive()` —
+`ir.py` is still the one calling the discrete moves (`Advance`, `Turn_Left`, etc.) directly.
 
 ### Pico → Pi: status/error reporting
 
@@ -75,10 +80,14 @@ and republishes them as a `diagnostic_msgs/DiagnosticArray` on `/diagnostics`
 Diagnostics panel like any other robot health status.
 
 ROS side: [vel_to_serial.py](../ros2_ws/src/pico_control/pico_control/vel_to_serial.py)
-subscribes to `cmd_vel` (`geometry_msgs/Twist`) and picks the closest matching command from
-`linear.x`/`linear.y`/`angular.z` (rotation wins if it dominates, otherwise forward/back vs.
-strafe by whichever component is larger; ±0.1 deadzone). It re-sends `STOP` if no `cmd_vel`
-message has arrived in the last 0.5s — the same safety idea, enforced from both ends. Launch
+subscribes to `cmd_vel` (`geometry_msgs/Twist`) and normalizes `linear.x`/`linear.y`/
+`angular.z` directly into `[-1, 1]` by dividing by the `max_linear_speed`/`max_angular_speed`
+ROS params (defaults 0.5 m/s, 1.5 rad/s — tune to taste). A 20Hz timer sends the latest values
+as `VEL:vx,vy,wz`, deduped against the last-sent tuple so a steady `cmd_vel` doesn't spam the
+UART with identical lines. There's no silence-based auto-stop on either end anymore (the
+Pico-side one was dropped earlier as unnecessary complexity, and the ROS-side one was pulsing
+motion to zero whenever Foxglove's Teleop panel didn't publish a perfectly steady stream) — the
+robot now simply keeps doing whatever it was last told until a new command arrives. Launch
 with:
 
 ```bash
@@ -90,12 +99,16 @@ This isn't in `supervisord.conf` yet, so it doesn't start with the rest of the s
 
 ## What's not wired up yet
 
-- Speed is a fixed constant on the Pico (`SPEED = 60` in `mecanumCar_v2.py`) — `cmd_vel`
-  magnitude is currently ignored, only direction matters.
-- No wheel odometry — nothing reports actual motion back to ROS.
-- The diagonal/drift moves and LED command are implemented on both ends but nothing today
-  generates `cmd_vel` values that would trigger them (the mapping only ever emits the 6 axis
-  directions).
+- No wheel odometry — nothing reports actual motion back to ROS. `Driver.status()` is already
+  shaped to grow a field for this once it exists (see status/error reporting above).
+- The `SPEED` PWM ceiling is still a single tuned constant, not something `drive()` varies per
+  call — full-scale `vx`/`vy`/`wz` all drive at the same top speed there's no separate
+  fine/coarse gear.
+- The discrete diagonal/drift moves (`LU_Move`, `drift_left`, etc.) and IR's discrete moves are
+  no longer reachable from serial at all now that the protocol is `VEL:`/`LED:` only — true
+  diagonal motion happens instead as a natural side effect of the continuous mixer (nonzero
+  `vx` and `vy` together), not via those preset methods. They're still there for `ir.py`/REPL
+  use, just not part of the wire protocol.
 - The IR remote ([robot/ir.py](../robot/ir.py)) works as an independent, ROS-free fallback
   control path, decoded straight from the receiver pin. `control.py` arbitrates between it and
   serial: any IR button press takes exclusive control (serial input is still read so it doesn't
