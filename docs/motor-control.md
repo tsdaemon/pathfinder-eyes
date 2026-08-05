@@ -12,7 +12,7 @@
 Vendor driver: [robot/mecanumCar_v2.py](../robot/mecanumCar_v2.py) — mostly Keyestudio's own
 code (kept close to original), exposing directional moves (`Advance`, `Back`, `Turn_Left`,
 `Turn_Right`, `L_Move`/`R_Move` strafe, four diagonal moves, `drift_left`/`drift_right`),
-`stop`, LED control, and ultrasonic distance — these are the discrete moves `ir.py` calls
+`stop`, LED control — these are the discrete moves `ir.py` calls
 directly. On top of those, `drive(vx, vy, wz)` is our own addition: a continuous mecanum mix
 (see Protocol below) that blends forward/back, strafe, and rotate into per-wheel PWM, instead
 of snapping to one discrete move at a fixed speed.
@@ -68,11 +68,6 @@ Pi over UART on change:
 ERR:<exception text>     # e.g. ERR:[Errno 110] ETIMEDOUT
 OK                        # sent once, when the fault clears
 ```
-
-Before this, an `OSError` from a powered-down driver board would propagate out of
-`control_loop()` and kill the whole `main.py` loop — both IR and serial would stop being
-serviced entirely until the Pico was manually reset. Now the driver simply reports itself
-unhealthy and keeps working once power is back, with no reset needed.
 
 `vel_to_serial.py` reads these lines (non-blocking, polled at 20Hz alongside its own writes)
 and republishes them as a `diagnostic_msgs/DiagnosticArray` on `/diagnostics`

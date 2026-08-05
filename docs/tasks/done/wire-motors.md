@@ -1,6 +1,6 @@
 # Wire up motor control
 
-- [x] Pico reflashed to stock MicroPython — was stuck on the old abandoned `zmyi-control`
+- [x] Pico reflashed to stock MicroPython — was stuck on the old abandoned
       firmware, silently ignoring everything flashed to it. See [docs/pico.md](../pico.md).
 - [x] IR remote control debugged and working reliably — receiver wiring/power confirmed, decode
       rewritten to interrupt-driven edge capture (was missing edges under polling), NEC codes

@@ -24,7 +24,7 @@ Port comes from [.env](../.env) (`PORT=/dev/ttyACM0`).
 Reflashing means putting the RP2350 into its USB mass-storage bootloader (BOOTSEL mode) and
 dragging a firmware image onto it — a different mechanism from `make flash`, which only writes
 files to the filesystem of whatever firmware is already running and can't override a firmware
-image like `zmyi-control` that never hands off to a filesystem `main.py`.
+image.
 
 1. Download the Pico 2 W MicroPython UF2:
    https://micropython.org/download/RPI_PICO2_W/

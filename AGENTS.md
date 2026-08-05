@@ -86,9 +86,6 @@ OAK-D and Pico are physically attached and can be live. Concretely:
   a private link; don't add auth as an unprompted "security fix" without checking first.
 - Motor control (`pico_control`) is not in `supervisord.conf` — it's still started by hand.
   Speed is a fixed constant on the Pico side; `cmd_vel` magnitude is ignored, only direction.
-- MAVLink and the third-party `zmyi-control` firmware were both tried and abandoned. Don't
-  reintroduce either — if you find old references, they're historical (in `docs/notes/`) or
-  should be treated as leftovers to flag, not a pattern to follow.
 - The physical Pico's firmware/debugging status (what's actually flashed, board identity,
   open issues) is tracked in [docs/pico.md](docs/pico.md), not here — check it before assuming
   `robot/` code is wrong when hardware behavior doesn't match what the code implies.
