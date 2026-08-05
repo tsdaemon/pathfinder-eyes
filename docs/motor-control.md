@@ -26,7 +26,7 @@ board. Three jumper wires, crossed:
 | GND                   | GND |
 
 115200 baud, 3.3V logic on both ends (no level shifting needed). On the Pi side this is
-`/dev/ttyAMA0`, enabled by the `uart0` overlay in [config.txt](../config.txt) (also disables
+`/dev/ttyAMA0`, enabled by the `uart0` overlay in [infra/config.txt](../infra/config.txt) (also disables
 Bluetooth, which otherwise owns the PL011 UART on this board). If the old wiring is gone,
 this is all it takes to remake it — three female-female Dupont jumpers.
 

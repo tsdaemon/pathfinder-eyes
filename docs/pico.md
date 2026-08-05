@@ -35,3 +35,23 @@ image like `zmyi-control` that never hands off to a filesystem `main.py`.
 5. Wait ~2 seconds, then release BOOTSEL. Check status with `ls /mnt`: should come up with `pico`
 6. Copy the downloaded `.uf2` onto that drive. It flashes itself and reboots automatically.
 7. Confirm with `mpremote connect $(PORT) repl` — should show a plain MicroPython REPL banner.
+
+## Testing the UART link manually
+
+To check the Pi↔Pico UART wiring (see [docs/motor-control.md](motor-control.md)) without
+involving ROS, read/write `/dev/ttyAMA0` directly from the Pi:
+
+```bash
+cd robot && make test-uart
+stty -F /dev/ttyAMA0 115200 raw -echo   # only needed before plain `cat`, see below
+cat /dev/ttyAMA0
+```
+
+This should show you a repeating message "Hello from Pico!".
+
+The `stty` call is only needed because `cat` doesn't configure the port itself — it just
+reads whatever framing the port happens to be left in. `vel_to_serial.py` (the actual ROS
+node that talks to the Pico) opens the port with pyserial, which sets baud rate, raw mode,
+and no-echo itself at open time, so the ROS pipeline works regardless of `stty` state; this
+is purely a convenience step for manual testing, not something that needs to persist across
+reboots.
