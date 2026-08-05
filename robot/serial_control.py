@@ -19,3 +19,9 @@ def serial_loop():
         return line.decode().strip()
 
     return None
+
+
+def send_status(line):
+    """Write a status/error line back to the Pi over the same UART (e.g.
+    "ERR:[Errno 110] ETIMEDOUT", "OK")."""
+    uart.write((line + "\n").encode())

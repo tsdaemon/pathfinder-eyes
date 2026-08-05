@@ -2,6 +2,7 @@ import time
 
 import rclpy
 import serial
+from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 from geometry_msgs.msg import Twist
 from rclpy.node import Node
 
@@ -28,6 +29,11 @@ class VelToSerialNode(Node):
         )
         self.create_timer(0.1, self._check_timeout)
 
+        self.diagnostics_pub = self.create_publisher(
+            DiagnosticArray, "/diagnostics", 10
+        )
+        self.create_timer(0.05, self._read_pico_status)
+
     def _on_cmd_vel(self, msg: Twist):
         self.last_msg_time = time.monotonic()
         self._send(self._to_command(msg))
@@ -35,6 +41,28 @@ class VelToSerialNode(Node):
     def _check_timeout(self):
         if time.monotonic() - self.last_msg_time > COMMAND_TIMEOUT_S:
             self._send("STOP")
+
+    def _read_pico_status(self):
+        if self.ser.in_waiting == 0:
+            return
+        line = self.ser.readline().decode(errors="replace").strip()
+        if not line:
+            return
+
+        status = DiagnosticStatus()
+        status.name = "pico_motor_driver"
+        status.hardware_id = "pico"
+        if line.startswith("ERR:"):
+            status.level = DiagnosticStatus.ERROR
+            status.message = line[len("ERR:") :]
+        else:
+            status.level = DiagnosticStatus.OK
+            status.message = line
+
+        msg = DiagnosticArray()
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.status.append(status)
+        self.diagnostics_pub.publish(msg)
 
     @staticmethod
     def _to_command(msg: Twist) -> str:

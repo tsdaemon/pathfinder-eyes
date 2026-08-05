@@ -1,6 +1,6 @@
 from mecanumCar_v2 import mecanumCar
 from ir import ir_loop
-from serial_control import serial_loop
+from serial_control import serial_loop, send_status
 import time
 
 IR_ACTIONS = {
@@ -39,6 +39,26 @@ SERIAL_TIMEOUT_MS = 1000
 
 _ir_active = False
 _last_serial_command_time = None
+_last_reported_fault = None
+
+
+def _report_chassis_status():
+    """Forward mecanumCar's own status to the Pi, once per tick, only on
+    change. mecanumCar.set_pwm() already catches its own OSErrors and tracks
+    the current fault - this just relays whatever it says, so a tick with
+    nothing to do can't be mistaken for a success."""
+    global _last_reported_fault
+
+    fault = mecanumCar.status()["fault"]
+    if fault == _last_reported_fault:
+        return
+
+    if fault is not None:
+        print("Fault:", fault)
+        send_status("ERR:{}".format(fault))
+    else:
+        send_status("OK")
+    _last_reported_fault = fault
 
 
 def _handle_ir(command):
@@ -56,6 +76,8 @@ def _handle_ir(command):
 
 def _handle_serial_line(line):
     global _last_serial_command_time
+
+    print("Serial line:", line)
 
     if not line:
         return
@@ -75,26 +97,13 @@ def _handle_serial_line(line):
 
 
 def control_loop():
-    global _last_serial_command_time
-
     ir_command = ir_loop()
     if ir_command is not None:
         _handle_ir(ir_command)
 
     serial_line = serial_loop()
 
-    if _ir_active:
-        # IR has control - keep draining serial so it doesn't desync, but
-        # don't act on it until "*" releases control.
-        return
-
-    if serial_line is not None:
+    if not _ir_active and serial_line is not None:
         _handle_serial_line(serial_line)
 
-    if (
-        _last_serial_command_time is not None
-        and time.ticks_diff(time.ticks_ms(), _last_serial_command_time)
-        > SERIAL_TIMEOUT_MS
-    ):
-        mecanumCar.stop()
-        _last_serial_command_time = None
+    _report_chassis_status()

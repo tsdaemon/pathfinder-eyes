@@ -45,9 +45,34 @@ LED:r,g,b
 
 Pico side: [robot/control.py](../robot/control.py) owns dispatch and arbitration between the
 two input sources (serial and IR, see below); [robot/serial_control.py](../robot/serial_control.py)
-only parses UART0 lines and hands them to `control.py`. If no serial command arrives for 1s
-while serial is the active source, `control.py` calls `stop()` — a dead link should not leave
-the robot driving blind.
+only parses UART0 lines and hands them to `control.py`.
+
+### Pico → Pi: status/error reporting
+
+The same UART also carries status lines back the other way. `mecanumCar_v2.Driver` owns this:
+its `set_pwm()` — the one place that actually talks I2C to the STC8G1K08 — catches `OSError`
+(e.g. `ETIMEDOUT`, the classic symptom of the motor driver board's power switch being off)
+instead of letting it propagate, and tracks the current fault on `self.fault`. `Driver.status()`
+exposes it as `{"fault": None}` or `{"fault": "<exception text>"}` — a dict so it's easy to grow
+(e.g. odometry) without changing every caller.
+
+`control.py`'s `control_loop()` reads `mecanumCar.status()` once per tick and forwards it to the
+Pi over UART on change:
+
+```
+ERR:<exception text>     # e.g. ERR:[Errno 110] ETIMEDOUT
+OK                        # sent once, when the fault clears
+```
+
+Before this, an `OSError` from a powered-down driver board would propagate out of
+`control_loop()` and kill the whole `main.py` loop — both IR and serial would stop being
+serviced entirely until the Pico was manually reset. Now the driver simply reports itself
+unhealthy and keeps working once power is back, with no reset needed.
+
+`vel_to_serial.py` reads these lines (non-blocking, polled at 20Hz alongside its own writes)
+and republishes them as a `diagnostic_msgs/DiagnosticArray` on `/diagnostics`
+(`name: pico_motor_driver`, `hardware_id: pico`, `level` ERROR/OK) — visible in Foxglove's
+Diagnostics panel like any other robot health status.
 
 ROS side: [vel_to_serial.py](../ros2_ws/src/pico_control/pico_control/vel_to_serial.py)
 subscribes to `cmd_vel` (`geometry_msgs/Twist`) and picks the closest matching command from

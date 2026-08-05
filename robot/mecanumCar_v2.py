@@ -2,13 +2,12 @@
 STC8G1K0B PWM OUT
 WS2812
 colorfur light
-ultrasonic
 FOR KEYES MECANUMCAR_V2(RASPBERRY PI PICO)
 2022/7/1
 DengFei
 www.keyestudio.com
 """
-from machine import Pin, time_pulse_us, PWM, I2C
+from machine import Pin, time_pulse_us, I2C
 import array
 import time
 import rp2
@@ -18,21 +17,6 @@ SPEED = 60
 
 trigger = Pin(3, Pin.OUT)
 echo = Pin(4, Pin.IN)
-
-
-servo = PWM(Pin(2))  # Servo pin connected to GP2
-servo.freq(50)  # 20ms period, so frequency is 50Hz
-
-
-# Set the rotation angle of the servo motor
-def setServoCycle(position):
-    servo.duty_u16(position)
-    # time.sleep(0.01)
-
-
-# Convert rotation angle to duty cycle
-def convert(x, i_m, i_M, o_m, o_M):
-    return max(min(o_M, (x - i_m) * (o_M - o_m) // (i_M - i_m) + o_m), o_m)
 
 
 @rp2.asm_pio(
@@ -83,21 +67,16 @@ class Driver(object):
         self.speed_Lower_L = SPEED
         self.speed_Upper_R = SPEED
         self.speed_Lower_R = SPEED
+        self.fault = None
         time.sleep(1)
 
-    # Set servo angle
-    def set_angle(self, angle):
+    def status(self):
+        """Current chassis health as reported by the driver itself - the one
+        place that actually talks I2C to the STC8G1K08, so it's the one place
+        that knows whether it's working. A dict so it's easy to grow (e.g.
+        odometry) without changing every caller.
         """
-        Duty cycle corresponding to angle
-        0°----2.5%----1638
-        45°----5%----3276
-        90°----7.5%----4915
-        135°----10%----6553
-        180°----12.5%----8192
-        Set duty cycle between 1638~8192, which allows smooth rotation from 0~180 degrees
-        """
-        pos = convert(angle, 0, 180, 1638, 8192)
-        setServoCycle(pos)
+        return {"fault": self.fault}
 
     # Set LED brightness
     def set_brightness(self, brightness=None):
@@ -289,22 +268,15 @@ class Driver(object):
             self.set_pwm(6, 0)
 
     def set_pwm(self, channel, value):
-        self.i2c.writeto_mem(self.addr, channel, bytearray([value & 0xFF]))
-
-    # Ultrasonic
-    def get_distance(self):
-        trigger.value(0)
-        time.sleep_us(2)
-        trigger.value(1)
-        time.sleep_us(15)
-        trigger.value(0)
-
-        t = time_pulse_us(echo, 1, 35000)
-        if t <= 0 and self.lastEchoDuration >= 0:
-            t = self.lastEchoDuration
-
-        self.lastEchoDuration = t
-        return round(t * 0.017)
+        try:
+            self.i2c.writeto_mem(self.addr, channel, bytearray([value & 0xFF]))
+        except OSError as e:
+            errno = e.args[0] if e.args else None
+            self.fault = "I2C write to addr 0x{:02x} channel {} (value {}) failed: errno {} ({})".format(
+                self.addr, channel, value, errno, e
+            )
+        else:
+            self.fault = None
 
 
 # --- Initialize car driver ---
