@@ -39,6 +39,35 @@ Foxglove's **Teleop panel** publishes `geometry_msgs/Twist` directly to `cmd_vel
 right now with no additional stack — it's the cheapest option and good enough for
 driving-around testing.
 
+**Joystick** is the same pipeline with a different `/cmd_vel` producer: install Foxglove
+Studio's joystick-panel extension, which reads the browser Gamepad API and publishes
+`sensor_msgs/Joy` on `/joy` over the same already-open `ws://eyes.local:8765` connection — no
+gamepad plugged into the Pi itself, no new network path. On the robot side,
+`ros2_ws/launch_teleop_joy.py` runs `teleop_twist_joy`'s `teleop_node`, subscribing to `/joy`
+and publishing `cmd_vel` — the same topic the Teleop panel already feeds, so `vel_to_serial`
+needs no changes:
+
+```bash
+cd ros2_ws && python launch_teleop_joy.py
+```
+
+Axis indices in `ros2_ws/config/teleop_joy.yaml` are confirmed by testing, not guessed: a live
+`/joy` message showed 4 axes + 17 buttons, all near-zero at rest, matching the
+[W3C Standard Gamepad Mapping](https://w3c.github.io/gamepad/#remapping)'s axis/button count,
+so the Foxglove extension is relaying the browser Gamepad API's axes/buttons directly — axis
+0/1 = left stick X/Y, axis 2 = right stick X. The scale *signs*, though, turned out to be the
+opposite of that spec's textbook stick-up/stick-left-reads-`-1` convention — confirmed by
+actually driving it, not derived from the spec, so if this extension or a future one behaves
+differently, re-check by testing rather than assuming the spec's convention holds.
+`enable_button`/`enable_turbo_button` (6/7 — right bumper/trigger area, per the standard
+mapping) were tuned the same way: comfort holding it while driving is a judgment call, not
+something a spec fixes. Not registered in `supervisord.conf` yet — hand-launch until confirmed
+working, same as `vel_to_serial` was.
+
+Backlog: SteamDeck as the joystick client needs no new engineering once this works — same
+extension, same mechanism, just Foxglove Studio running on the SteamDeck instead of a laptop,
+with its controller exposed as a standard browser gamepad via Steam Input.
+
 ## Giving it plans (not yet wired up)
 
 "Drive to this point on the map" needs more than a viewer: something has to turn RTAB-Map's

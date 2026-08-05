@@ -1,0 +1,27 @@
+teleop_twist_joy_node:
+  ros__parameters:
+    # Confirmed against a live /joy message: 4 axes + 17 buttons, all near-zero at rest -
+    # matches the W3C Standard Gamepad Mapping's axis count, so axis 0/1 = left stick X/Y,
+    # axis 2 = right stick X. Signs confirmed by testing (not the spec's textbook -1-at-top/
+    # left convention, which turned out backwards for this extension) - positive scales give
+    # forward/left-strafe/left-turn reading positive, matching the vx/vy/wz conventions in
+    # vel_to_serial.py.
+    axis_linear:
+      x: 1   # left stick vertical
+      y: 0   # left stick horizontal
+    axis_angular:
+      yaw: 2 # right stick horizontal
+    # Magnitude matches vel_to_serial's max_linear_speed/max_angular_speed defaults (0.5 m/s,
+    # 1.5 rad/s - see docs/motor-control.md), so full stick deflection reaches its full
+    # [-1, 1] range. wz in particular needs to reach close to full deflection to actually turn
+    # the chassis - see the "what's not wired up yet" note in docs/motor-control.md.
+    scale_linear:
+      x: 0.5
+      y: 0.5
+    scale_angular:
+      yaw: 1.5
+    # Standard mapping's button 4 = left bumper (L1) - easy to hold with the sticks still in
+    # use, unlike a stick-click. Not yet confirmed comfortable/correct - test by holding it
+    # while checking /cmd_vel reacts, adjust if it's the wrong button or an awkward hold.
+    enable_button: 6
+    enable_turbo_button: 7

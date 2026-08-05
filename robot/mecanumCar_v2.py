@@ -14,6 +14,14 @@ import rp2
 
 SPEED = 60
 
+# Separate, higher ceiling for drive()'s continuous mix, decoupled from SPEED (which the
+# vendor discrete moves use). Turning/strafing scrub the wheels sideways against the floor and
+# need more torque to overcome friction than rolling forward does - SPEED=60 wasn't enough for
+# either, even at full deflection (which reduces to the same wheel commands as Turn_Left()/
+# L_Move() - not a mixer-specific bug). Tune by feel; keep it decoupled from SPEED so
+# IR's already-working forward speed doesn't change while this gets retuned.
+DRIVE_SPEED = 100
+
 
 trigger = Pin(3, Pin.OUT)
 echo = Pin(4, Pin.IN)
@@ -149,10 +157,10 @@ class Driver(object):
             bl /= largest
             br /= largest
 
-        self.Motor_Upper_L(1 if fl >= 0 else 0, round(abs(fl) * SPEED))
-        self.Motor_Upper_R(1 if fr >= 0 else 0, round(abs(fr) * SPEED))
-        self.Motor_Lower_L(1 if bl >= 0 else 0, round(abs(bl) * SPEED))
-        self.Motor_Lower_R(1 if br >= 0 else 0, round(abs(br) * SPEED))
+        self.Motor_Upper_L(1 if fl >= 0 else 0, round(abs(fl) * DRIVE_SPEED))
+        self.Motor_Upper_R(1 if fr >= 0 else 0, round(abs(fr) * DRIVE_SPEED))
+        self.Motor_Lower_L(1 if bl >= 0 else 0, round(abs(bl) * DRIVE_SPEED))
+        self.Motor_Lower_R(1 if br >= 0 else 0, round(abs(br) * DRIVE_SPEED))
 
     # Stop
     def stop(self):
