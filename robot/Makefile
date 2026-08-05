@@ -16,5 +16,10 @@ test-uart:
 	mpremote connect $(PORT) fs cp test_uart.py :main.py
 	make reset
 
+.PHONY: test-ir
+test-ir:
+	mpremote connect $(PORT) fs cp test_ir.py :main.py
+	make reset
+
 repl:
 	mpremote connect $(PORT) repl

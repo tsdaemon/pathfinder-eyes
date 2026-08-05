@@ -12,10 +12,12 @@ hand, so it survives crashes and can be restarted from ROS. Config:
 | `foxglove_bridge` | `ros2 run foxglove_bridge` on port 8765 | remote visualisation |
 | `supervisord_bridge` | [launch_supervisord_bridge.py](../ros2_ws/launch_supervisord_bridge.py) | process control + health from ROS |
 | `diagnostics` | [launch_diagnostics.py](../ros2_ws/launch_diagnostics.py) | CPU / RAM monitors |
+| `pico_control` | [launch_pico_control.py](../ros2_ws/launch_pico_control.py) | `cmd_vel` → Pico over UART |
+| `teleop_joy` | [launch_teleop_joy.py](../ros2_ws/launch_teleop_joy.py) | `/joy` → `cmd_vel` |
 
 See [docs/depthai.md](depthai.md) for what `depthai` and `rtabmap` actually do, and
-[docs/motor-control.md](motor-control.md) for the Pico link (not currently in this list —
-still run by hand).
+[docs/motor-control.md](motor-control.md) / [docs/remote-control.md](remote-control.md) for the
+Pico link and joystick control.
 
 ## Controlling it
 

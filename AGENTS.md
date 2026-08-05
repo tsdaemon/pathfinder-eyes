@@ -11,9 +11,12 @@ setup/run commands, then the topic docs:
 
 - [docs/depthai.md](docs/depthai.md) — camera + SLAM pipeline
 - [docs/supervisord.md](docs/supervisord.md) — process supervision, health bridge, watchdog
-- [docs/motor-control.md](docs/motor-control.md) — Pico wiring, protocol, firmware
+- [docs/motor-control.md](docs/motor-control.md) — Pico wiring, protocol
+- [docs/pico.md](docs/pico.md) — Pico board identity, flashing, firmware debugging status
 - [docs/remote_control.md](docs/remote_control.md) — visualization, driving, planning from a laptop
 - [docs/notes/](docs/notes/) — dated engineering journal, oldest decisions to newest
+- [docs/plans/](docs/plans/) — implementation plans for in-progress multi-step work
+- [docs/tasks/](docs/tasks/) — short standalone reminders/follow-ups, not full plans
 
 ## Current goal
 
@@ -35,6 +38,10 @@ OAK-D and Pico are physically attached and can be live. Concretely:
   interrupt an in-progress session.
 - Don't flash the Pico (`make flash` in `robot/`) without being asked — it overwrites the
   running firmware on real hardware.
+- During an active hardware-debugging session (Pico attached, IR/UART wiring being poked at,
+  etc.) — don't touch the Pico's serial port yourself at all, including flashing. Write the
+  script/command and hand it to the user to run; they have hands and eyes on the hardware and
+  are almost certainly already holding the port open from their own REPL session anyway.
 - `ros2_ws/log/`, `build/`, `install/`, `env/` are real artifacts of past runs on this device,
   gitignored, and worth leaving alone unless the task is specifically about rebuilding.
 - There's no CI and no test suite. "Does it work" mostly means "does it run on this Pi with
@@ -67,6 +74,9 @@ OAK-D and Pico are physically attached and can be live. Concretely:
   the simplest approach that works over configurability or abstraction (see
   [docs/motor-control.md](docs/motor-control.md) for an example: a plain newline-terminated
   ASCII protocol was chosen over the previous MAVLink framing specifically to cut complexity).
+- Docs in `docs/*.md` should cut detail, not just words — only what a human needs to act.
+  Drop historical/rationale asides by default; put them in `docs/notes/` instead if worth
+  keeping.
 
 ## Known rough edges (don't be surprised by these, don't "fix" them silently)
 
@@ -76,9 +86,9 @@ OAK-D and Pico are physically attached and can be live. Concretely:
   a private link; don't add auth as an unprompted "security fix" without checking first.
 - Motor control (`pico_control`) is not in `supervisord.conf` — it's still started by hand.
   Speed is a fixed constant on the Pico side; `cmd_vel` magnitude is ignored, only direction.
-- MAVLink and the third-party `zmyi-control` firmware were both tried and abandoned. Don't
-  reintroduce either — if you find old references, they're historical (in `docs/notes/`) or
-  should be treated as leftovers to flag, not a pattern to follow.
+- The physical Pico's firmware/debugging status (what's actually flashed, board identity,
+  open issues) is tracked in [docs/pico.md](docs/pico.md), not here — check it before assuming
+  `robot/` code is wrong when hardware behavior doesn't match what the code implies.
 
 ## Before making changes
 
@@ -89,3 +99,6 @@ OAK-D and Pico are physically attached and can be live. Concretely:
   ends of the same hand-written line protocol with no shared schema.
 - Prefer editing existing docs over adding new markdown files; if a new topic genuinely
   doesn't fit `depthai` / `supervisord` / `motor-control`, ask before creating a new doc file.
+- Keep plans in the repo, not just in a local tool's plan-mode scratch file — write
+  multi-step implementation plans to `docs/plans/` (one file per plan, descriptive filename)
+  so they survive across machines/sessions and are visible in `git log`/PRs.
