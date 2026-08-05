@@ -19,6 +19,12 @@
       Part 1. One tuning note from testing: rotation needs `wz` close to full deflection to
       actually overcome friction and turn (Teleop's default angular scale was too low) — see
       [docs/motor-control.md](../motor-control.md)'s "what's not wired up yet".
-- [ ] Joystick control (Part 2 of the same plan).
-- [ ] `pico_control` (and eventually a joystick launch) registered in `supervisord.conf` —
-      still hand-launched.
+- [x] Joystick control (Part 2 of the same plan) — Foxglove's joystick-panel extension → `/joy`
+      → `teleop_twist_joy` → `cmd_vel`, confirmed working (forward/back, strafe, and rotate all
+      drive correctly). Axis/scale signs and `DRIVE_SPEED` were tuned empirically against the
+      actual hardware/extension rather than derived — see
+      [docs/remote-control.md](../remote-control.md) and
+      [docs/motor-control.md](../motor-control.md)'s "what's not wired up yet" for what's still
+      a known limitation (diagonal blending, no minimum-PWM floor).
+- [x] `pico_control` and `teleop_joy` registered in `supervisord.conf` — start with the rest of
+      the stack now, no longer hand-launched.

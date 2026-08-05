@@ -61,8 +61,8 @@ actually driving it, not derived from the spec, so if this extension or a future
 differently, re-check by testing rather than assuming the spec's convention holds.
 `enable_button`/`enable_turbo_button` (6/7 — right bumper/trigger area, per the standard
 mapping) were tuned the same way: comfort holding it while driving is a judgment call, not
-something a spec fixes. Not registered in `supervisord.conf` yet — hand-launch until confirmed
-working, same as `vel_to_serial` was.
+something a spec fixes. Registered in `supervisord.conf` as `teleop_joy` — starts with the
+rest of the stack, see [docs/supervisord.md](supervisord.md).
 
 Backlog: SteamDeck as the joystick client needs no new engineering once this works — same
 extension, same mechanism, just Foxglove Studio running on the SteamDeck instead of a laptop,

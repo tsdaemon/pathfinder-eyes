@@ -94,7 +94,7 @@ with:
 cd ros2_ws && python launch_pico_control.py     # needs /dev/ttyAMA0 and a flashed Pico
 ```
 
-This isn't in `supervisord.conf` yet, so it doesn't start with the rest of the stack — see
+Registered in `supervisord.conf` as `pico_control` — starts with the rest of the stack, see
 [docs/supervisord.md](supervisord.md) for the process list.
 
 ## What's not wired up yet
