@@ -3,7 +3,7 @@
 from launch import LaunchDescription, LaunchService
 from launch_ros.actions import Node
 
-from config import RTABMAP_INERTIAL_PARAMS
+from config import OAKD_NAME, RTABMAP_INERTIAL_PARAMS
 
 
 def generate_launch_description():
@@ -18,9 +18,9 @@ def generate_launch_description():
                 output="screen",
                 parameters=RTABMAP_INERTIAL_PARAMS,
                 remappings=[
-                    ("rgb/image", "/right/image_rect"),
-                    ("rgb/camera_info", "/right/camera_info"),
-                    ("depth/image", "/stereo/depth"),
+                    ("rgb/image", "/" + OAKD_NAME + "/right/image_rect"),
+                    ("rgb/camera_info", "/" + OAKD_NAME + "/right/camera_info"),
+                    ("depth/image", "/" + OAKD_NAME + "/stereo/image_raw"),
                 ],
             ),
             # Visual odometry

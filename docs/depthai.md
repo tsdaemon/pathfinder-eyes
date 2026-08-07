@@ -33,31 +33,42 @@ along with `imu_filter_madgwick`, `image_pipeline`, `robot_localization`.
 ## Pipeline in use ("inertial")
 
 ```
-depthai_examples/stereo_inertial_node  (mono 400p, depth_aligned=false)
-  ├── /right/image_rect , /right/camera_info
-  ├── /stereo/depth
-  └── /imu  ──► imu_filter_madgwick (use_mag=false, ENU) ──► /imu/data
-                                                               │
-rtabmap_sync/rgbd_sync ◄── right + depth + camera_info         │
-        │                                                      │
-        └──► rtabmap_odom/rgbd_odometry ◄──────────────────────┤
-                    │                                          │
-                    └──► rtabmap_slam/rtabmap ◄────────────────┘
+depthai_ros_driver/camera.launch.py  (mono 400P, RGB disabled, depth not aligned to RGB)
+  ├── /oakd/right/image_rect , /oakd/right/camera_info
+  ├── /oakd/stereo/image_raw
+  └── /oakd/imu/data  ──► imu_filter_madgwick (use_mag=false, ENU) ──► /imu/data
+                                                                          │
+rtabmap_sync/rgbd_sync ◄── right + depth + camera_info                   │
+        │                                                                 │
+        └──► rtabmap_odom/rgbd_odometry ◄─────────────────────────────────┤
+                    │                                                    │
+                    └──► rtabmap_slam/rtabmap ◄──────────────────────────┘
 ```
 
 Launch files: [launch_depthai_inertial.py](../ros2_ws/launch_depthai_inertial.py) and
 [launch_rmaptab_inertial.py](../ros2_ws/launch_rmaptab_inertial.py). All parameters (RTAB-Map
-tuning, frame ids, depthai launch args) live in one place:
-[ros2_ws/config.py](../ros2_ws/config.py). `CAMERA_FRAME` is `oak-d-base-frame`; odom/map
-frames are the conventional `odom`/`map`.
+tuning, frame ids, camera name) live in [ros2_ws/config.py](../ros2_ws/config.py); the
+driver's own per-sensor/IMU tuning is in [ros2_ws/config/oakd.yaml](../ros2_ws/config/oakd.yaml).
+`CAMERA_FRAME` is `oak-d-base-frame`; odom/map frames are the conventional `odom`/`map`.
 
 Both `depthai` and `rtabmap` run as supervisord programs — see
 [docs/supervisord.md](supervisord.md) for how they're started, restarted and health-checked.
 
-An earlier RGB+depth pipeline built on `depthai_ros_driver` was tried first and dropped —
-benchmarked as too heavy for the Pi. See [docs/notes/2025.05.04.md](notes/2025.05.04.md) and
-[docs/notes/2025.05.10.md](notes/2025.05.10.md) for that comparison; the code itself was
-removed since the "inertial" pipeline above is the only one that's actually run.
+### Why depthai_ros_driver instead of depthai_examples
+
+An earlier RGB+depth pipeline built on `depthai_ros_driver` was tried first and dropped for
+being too heavy for the Pi (see [docs/notes/2025.05.04.md](notes/2025.05.04.md) and
+[docs/notes/2025.05.10.md](notes/2025.05.10.md)), in favor of `depthai_examples`'
+`stereo_inertial_node`. That node turned out to have a persistent ~100-150ms lag between its
+`/imu` topic and its camera frames — not a bug, but device-side XLink/VPU bandwidth
+contention combined with IMU batch settings hardcoded in C++ (`batchReportThreshold=5`,
+`maxBatchReports=20`), un-tunable without a source rebuild. `depthai_ros_driver` exposes the
+same batching as ROS params (`imu.i_batch_report_threshold`, `imu.i_max_batch_reports` in
+`config/oakd.yaml`), tuned there to eliminate the lag (verified: small negative gap instead of
+a persistent +100ms - see [docs/notes/2026.08.07.md](notes/2026.08.07.md)). So we're back on
+`depthai_ros_driver`, but configured mono-only (`rgb.i_disable_node: true`) to keep the same
+lightweight footprint that made `stereo_inertial_node` the pick in the first place — this
+isn't a return to the heavy RGB+depth config that got dropped before.
 
 ## TF tree
 

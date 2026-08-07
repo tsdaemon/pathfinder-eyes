@@ -21,12 +21,11 @@ def generate_launch_description():
         [
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
-                    [
-                        os.path.join(
-                            get_package_share_directory("depthai_examples"), "launch"
-                        ),
-                        "/stereo_inertial_node.launch.py",
-                    ]
+                    os.path.join(
+                        get_package_share_directory("depthai_ros_driver"),
+                        "launch",
+                        "camera.launch.py",
+                    )
                 ),
                 launch_arguments=OAKD_INERTIAL_LAUNCH_ARGUMENTS.items(),
             ),
@@ -38,7 +37,7 @@ def generate_launch_description():
                 parameters=[
                     {"use_mag": False, "world_frame": "enu", "publish_tf": False}
                 ],
-                remappings=[("imu/data_raw", "/imu")],
+                remappings=[("imu/data_raw", "/oakd/imu/data")],
             ),
         ]
     )
