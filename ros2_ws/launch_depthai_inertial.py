@@ -7,6 +7,14 @@ from launch_ros.actions import Node
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from config import OAKD_INERTIAL_LAUNCH_ARGUMENTS
 
+# This setup requires running camera via powered USB hub. And make sure that its actually powered: powerbank may
+# disable power if its idle for a while. So the best appproach:
+# 1. Stop RPi
+# 2. Disconnect hub and RPi power bank connections
+# 3. Connect hub to powerbank
+# 4. Connect RPi to powerbank
+# Or just use external power supply for RPi
+
 
 def generate_launch_description():
     return LaunchDescription(

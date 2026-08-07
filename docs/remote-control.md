@@ -51,6 +51,8 @@ needs no changes:
 cd ros2_ws && python launch_teleop_joy.py
 ```
 
+![Foxglove joystick panel configuration](img/joy.png)
+
 Axis indices in `ros2_ws/config/teleop_joy.yaml` are confirmed by testing, not guessed: a live
 `/joy` message showed 4 axes + 17 buttons, all near-zero at rest, matching the
 [W3C Standard Gamepad Mapping](https://w3c.github.io/gamepad/#remapping)'s axis/button count,

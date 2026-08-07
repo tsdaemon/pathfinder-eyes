@@ -18,7 +18,7 @@ bring-up order:
 3. Connect the hub to power
 4. Connect the Pi to power
 
-(Duplicated as a comment in [ros2_ws/launch_depthai.py](../ros2_ws/launch_depthai.py).)
+(Duplicated as a comment in [ros2_ws/launch_depthai_inertial.py](../ros2_ws/launch_depthai_inertial.py).)
 
 ## Software
 
@@ -54,13 +54,10 @@ frames are the conventional `odom`/`map`.
 Both `depthai` and `rtabmap` run as supervisord programs — see
 [docs/supervisord.md](supervisord.md) for how they're started, restarted and health-checked.
 
-### The other pipeline (unused)
-
-[launch_depthai.py](../ros2_ws/launch_depthai.py) + [launch_rmaptab.py](../ros2_ws/launch_rmaptab.py)
-build on `depthai_ros_driver` instead, loading RTAB-Map as composable nodes into the driver's
-container and using RGB+depth rather than right+depth. It was benchmarked as too heavy for
-the Pi — the "inertial" pipeline above is the one that's actually been run. Both are compared
-in [docs/notes/2025.05.04.md](notes/2025.05.04.md) and [docs/notes/2025.05.10.md](notes/2025.05.10.md).
+An earlier RGB+depth pipeline built on `depthai_ros_driver` was tried first and dropped —
+benchmarked as too heavy for the Pi. See [docs/notes/2025.05.04.md](notes/2025.05.04.md) and
+[docs/notes/2025.05.10.md](notes/2025.05.10.md) for that comparison; the code itself was
+removed since the "inertial" pipeline above is the only one that's actually run.
 
 ## TF tree
 

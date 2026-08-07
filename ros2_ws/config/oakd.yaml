@@ -1,6 +1,0 @@
-/oak:
-ros__parameters:
-  pipeline_gen:
-    i_enable_sync: true
-  imu:
-    i_enable_rotation: true
