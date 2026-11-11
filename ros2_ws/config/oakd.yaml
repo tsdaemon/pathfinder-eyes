@@ -1,6 +1,33 @@
-/oak:
-ros__parameters:
-  pipeline_gen:
-    i_enable_sync: true
-  imu:
-    i_enable_rotation: true
+/**:
+  ros__parameters:
+    camera:
+      i_pipeline_type: Depth
+      i_enable_imu: true
+    # Mono only (no RGB), matching the previous stereo_inertial_node-based pipeline's
+    # footprint - it never touched RGB, and depth wasn't aligned to it either.
+    rgb:
+      i_disable_node: true
+    left:
+      i_resolution: "400P"
+      # Fixed exposure/gain to cut motion blur at speed - see docs/notes/2026.08.07.md.
+      r_set_man_exposure: true
+      r_exposure: 3000
+      r_iso: 800
+    right:
+      i_resolution: "400P"
+      r_set_man_exposure: true
+      r_exposure: 3000
+      r_iso: 800
+    stereo:
+      i_publish_topic: true
+      i_align_depth: false
+      i_right_rect_publish_topic: true
+    imu:
+      # Fixes the ~100-150ms IMU-behind-camera-frames lag seen with the old pipeline
+      # (device-side XLink/VPU contention, not host CPU - see docs/notes/2026.08.07.md).
+      # depthai_ros_driver exposes these as ROS params instead of hardcoding them; tuned to
+      # the most latency-favorable settings available (verified: small negative gap instead
+      # of persistent +100ms).
+      i_batch_report_threshold: 1
+      i_max_batch_reports: 4
+      i_sync_method: COPY

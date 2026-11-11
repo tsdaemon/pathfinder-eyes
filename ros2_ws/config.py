@@ -16,48 +16,32 @@ RTABMAP_COMMON_PARAMS = {
     "wait_imu_to_init": True,
 }
 
-RTABMAP_PARAMS = [
-    {
-        "subscribe_rgb": True,
-        "subscribe_depth": True,
-        "subscribe_odom_info": True,
-        "approx_sync": True,
-        "GFTT/MinDistance": "10",
-        "Vis/CorType": "1",
-        "OdomF2M/MaxSize": "800",
-        "Vis/MaxFeatures": "500",
-        "Odom/Strategy": "1",
-    }
-    | RTABMAP_COMMON_PARAMS
-]
-RTABMAP_REMAPPINGS = [
-    ("rgb/image", OAKD_NAME + "/rgb/image_rect"),
-    ("rgb/camera_info", OAKD_NAME + "/rgb/camera_info"),
-    ("depth/image", OAKD_NAME + "/stereo/image_raw"),
-    ("imu", OAKD_NAME + "/imu/data"),
-]
-
 RTABMAP_INERTIAL_PARAMS = [
     {
         "subscribe_rgbd": True,
         "subscribe_odom_info": True,
-        "approx_sync": False,
+        # depthai_ros_driver's right/image_rect, right/camera_info and stereo/image_raw come
+        # from separate composable nodes (rectify, stereo depth) rather than one node like
+        # stereo_inertial_node did, so their timestamps don't line up exactly even though each
+        # stream is individually healthy - exact sync (False) never fires. Matches the
+        # approx_sync=True the old depthai_ros_driver-based RTAB-Map config used, before it
+        # was dropped for being too heavy (see docs/depthai.md).
+        "approx_sync": True,
     }
     | RTABMAP_COMMON_PARAMS
 ]
 
 # oakd
-OAKD_LAUNCH_ARGUMENTS = {
-    "name": OAKD_NAME,
-    "imu_from_descr": "true",
-    "params_file": "config/oakd.yaml",
-    "publish_tf_from_calibration": "true",
-}
-
+# Switched from depthai_examples' stereo_inertial_node to depthai_ros_driver: the former
+# hardcodes IMU batching in C++ (batchReportThreshold=5, maxBatchReports=20), which produces
+# a persistent ~100-150ms IMU-behind-camera-frames lag (device-side XLink/VPU contention -
+# see docs/notes/2026.08.07.md). depthai_ros_driver exposes the same knobs as ROS params
+# (config/oakd.yaml), tuned there to a small negative (healthy) gap instead.
 OAKD_INERTIAL_LAUNCH_ARGUMENTS = {
-    "depth_aligned": "false",
-    "enableRviz": "false",
-    "monoResolution": "400p",
+    "name": OAKD_NAME,
+    "params_file": "config/oakd.yaml",
+    "imu_from_descr": "true",
+    "publish_tf_from_calibration": "true",
 }
 
 # supervisor

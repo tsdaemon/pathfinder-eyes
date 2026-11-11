@@ -2,6 +2,5 @@
 
 ## Next step
 
-Teach the robot to move: replace `vel_to_serial`'s 6 fixed-speed direction commands with
-continuous velocity control — a mecanum inverse-kinematics mixer on the Pico side. Current
-status and remaining work tracked in [docs/tasks/wire-motors.md](../tasks/wire-motors.md).
+Get robot VIO to work: see that it can move through the room in complex motion, and then
+return to the same spot.
