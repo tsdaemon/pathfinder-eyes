@@ -31,3 +31,7 @@
       i_batch_report_threshold: 1
       i_max_batch_reports: 4
       i_sync_method: COPY
+      # The IMU is a BNO086. Driver default GYROSCOPE_RAW has no bias compensation: measured
+      # ~0.2 deg/s (~12 deg/min) of yaw drift with the robot standing still (2026-11-11).
+      # CALIBRATED lets the chip estimate and remove the bias itself.
+      i_gyro_mode: GYROSCOPE_CALIBRATED

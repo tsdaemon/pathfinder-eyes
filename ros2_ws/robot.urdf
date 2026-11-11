@@ -31,10 +31,15 @@
   </link>
 
   <!-- Fixed joint from base to camera -->
+  <!-- 3D-printed mount (2026-11-11): camera body center is 0.09m forward of base_link,
+       0.095m above the ground.
+       Yaw -0.05 rad (~-3 deg, turned toward the robot's right): unintended - the stand is
+       too thin and the cable twists it. Estimated from a top-down photo, not measured
+       precisely; re-check if the stand is reprinted or the cable re-routed. -->
   <joint name="camera_joint" type="fixed">
     <parent link="base_link"/>
     <child link="oak-d-base-frame"/>
-    <origin xyz="0.08 0 0.095" rpy="0 0 0"/>
+    <origin xyz="0.09 0 0.095" rpy="0 0 -0.05"/>
   </joint>
 
 </robot>
