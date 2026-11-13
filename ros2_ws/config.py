@@ -67,6 +67,9 @@ EKF_PARAMS = [
     {
         # 30Hz kept missing its deadline on the loaded Pi ("Failed to meet update rate").
         "frequency": 20.0,
+        # Without this the "odometry/filtered topic status" diagnostic is never ticked and
+        # always reports 0 Hz, even while the EKF publishes at full rate (2026-11-13).
+        "print_diagnostics": True,
         # IMU messages arrive stamped slightly older than VO's camera frames. Without this,
         # once a VO message is applied every later-arriving IMU message is "in the past" and
         # gets silently dropped - with yaw from the gyro only, EKF heading never moved.
@@ -124,6 +127,23 @@ EKF_PARAMS = [
             False,
             False,
         ],
+        # Teleop's /cmd_vel as a control input: the EKF's prediction accelerates vx/vy towards
+        # the commanded speed, and with no command for control_timeout it decelerates to zero,
+        # so a parked robot predicts zero velocity between noisy VO readings. Yaw rate isn't
+        # controlled - the gyro is better, and commanded wz is uncalibrated (1.5 rad/s command
+        # vs ~3.4 rad/s real spin). Commanded vx/vy magnitude is uncalibrated too (teleop
+        # 0.5 m/s = full PWM), so VO still sets the actual speed.
+        # control_timeout must be set: robot_localization's default 0 counts every command as
+        # already stale.
+        "use_control": True,
+        "control_timeout": 0.5,
+        # [vx vy vz vroll vpitch vyaw]; limits in m/s^2, gains in 1/s. robot_localization's
+        # example values for vx, copied to vy for mecanum strafing.
+        "control_config": [True, True, False, False, False, False],
+        "acceleration_limits": [1.3, 1.3, 0.0, 0.0, 0.0, 0.0],
+        "acceleration_gains": [0.8, 0.8, 0.0, 0.0, 0.0, 0.0],
+        "deceleration_limits": [1.3, 1.3, 0.0, 0.0, 0.0, 0.0],
+        "deceleration_gains": [1.0, 1.0, 0.0, 0.0, 0.0, 0.0],
     }
 ]
 

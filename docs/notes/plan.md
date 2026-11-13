@@ -14,3 +14,5 @@ while turning is untested. Next, in order:
    conversion is in `foxglove/pathfinder.json` — not yet checked in Studio.
 3. Pair the joystick with the Pi over Bluetooth and drive without Foxglove.
 4. Keep tuning VIO: arcs and room loops, then the two-lap return-to-start test.
+5. (2026-11-13) Tried Basalt VIO in place of VO + EKF + `vo_gate.py`: translation unusable
+   on this camera, abandoned - see [docs/plans/basalt-vio.md](../plans/basalt-vio.md).

@@ -19,7 +19,10 @@ from rclpy.node import Node
 from rclpy.time import Time
 from sensor_msgs.msg import Imu
 
-TURN_RATE = 0.8  # rad/s
+# Between straight driving and spinning: "straight" driving veers at up to ~0.95 rad/s (the
+# chassis isn't balanced), and 0.8 gated nearly all VO while driving forward (2026-11-13).
+# Spins run at ~3.4 rad/s.
+TURN_RATE = 2.0  # rad/s
 WINDOW = (
     0.3  # s, each side of the VO stamp (VO is ~0.2s behind; spin-up/down transients)
 )

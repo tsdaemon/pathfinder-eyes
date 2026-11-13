@@ -134,7 +134,10 @@ rgbd_odometry ──► /vo ──► vo_gate.py ──► /vo_gated (vx, vy) �
 
 - **EKF** (`EKF_PARAMS`, `robot_localization`, 2D): yaw rate from the gyro only; VO provides
   forward/sideways velocity only. Long-term heading drift is corrected by RTAB-Map's loop
-  closures (`map → odom`), not by VO.
+  closures (`map → odom`), not by VO. Teleop's `/cmd_vel` is a control input for vx/vy
+  (`use_control`): the prediction heads toward the commanded speed, or zero after 0.5 s
+  without a command. Not used for yaw. Command magnitudes aren't calibrated to real speed,
+  so VO still decides how fast.
 - **VO** (`rgbd_odometry`) publishes `/vo` without TF in its own `vo_odom` frame, doesn't read
   the IMU itself, and takes its motion guess from the EKF TF (`guess_frame_id: odom`), so
   during spins it knows roughly how far the image rotated.
