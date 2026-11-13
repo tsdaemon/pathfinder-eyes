@@ -32,6 +32,12 @@ Three approaches have been tried, in order:
 **Current answer: use Foxglove Studio, connect to `ws://eyes.local:8765`.** It's the right
 tool for both monitoring and — see below — basic driving.
 
+Layout: import [foxglove/pathfinder.json](../foxglove/pathfinder.json)
+(Layouts → Import). Plots on the left, diagnostics + log in the middle, 3D + camera on the right.
+It includes a User Script (`diag_values`) that republishes `/diagnostics` string values as
+numbers on `/studio_script/diag_values`. To plot another diagnostic, add a Plot path
+`/studio_script/diag_values.values[:]{name=="<status name>"}{key=="<key>"}.value`.
+
 ## Manual driving today
 
 Foxglove's **Teleop panel** publishes `geometry_msgs/Twist` directly to `cmd_vel`, which

@@ -1,0 +1,327 @@
+{
+  "configById": {
+    "Plot!pipelinehz": {
+      "foxglovePanelTitle": "Pipeline Hz",
+      "paths": [
+        {
+          "value": "/studio_script/diag_values.values[:]{name==\"rgbd_sync: Output Status\"}{key==\"Actual frequency (Hz)\"}.value",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "sync"
+        },
+        {
+          "value": "/studio_script/diag_values.values[:]{name==\"rgbd_odometry: Input Status\"}{key==\"Actual frequency (Hz)\"}.value",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "vo in"
+        },
+        {
+          "value": "/studio_script/diag_values.values[:]{name==\"rgbd_odometry: Output Status\"}{key==\"Actual frequency (Hz)\"}.value",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "vo out"
+        },
+        {
+          "value": "/studio_script/diag_values.values[:]{name==\"ekf_filter_node: odometry/filtered topic status\"}{key==\"Actual frequency (Hz)\"}.value",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "ekf"
+        },
+        {
+          "value": "/studio_script/diag_values.values[:]{name==\"rtabmap: Input Status\"}{key==\"Actual frequency (Hz)\"}.value",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "map in"
+        },
+        {
+          "value": "/studio_script/diag_values.values[:]{name==\"rtabmap: Output Status\"}{key==\"Actual frequency (Hz)\"}.value",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "map out"
+        }
+      ],
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": false,
+      "legendDisplay": "top",
+      "showPlotValuesInLegend": false,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "followingViewWidth": 60,
+      "sidebarDimension": 240,
+      "minYValue": 0
+    },
+    "Plot!votiming": {
+      "foxglovePanelTitle": "VO timing (s)",
+      "paths": [
+        {
+          "value": "/odom_info_lite.interval",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "interval"
+        },
+        {
+          "value": "/odom_info_lite.time_estimation",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "estimation"
+        }
+      ],
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": false,
+      "legendDisplay": "top",
+      "showPlotValuesInLegend": false,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "followingViewWidth": 60,
+      "sidebarDimension": 240,
+      "minYValue": 0
+    },
+    "Plot!tracking": {
+      "foxglovePanelTitle": "Tracking health",
+      "paths": [
+        {
+          "value": "/odom_info_lite.inliers",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "inliers"
+        },
+        {
+          "value": "/odom_info_lite.lost",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "lost"
+        }
+      ],
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": false,
+      "legendDisplay": "top",
+      "showPlotValuesInLegend": false,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "followingViewWidth": 60,
+      "sidebarDimension": 240,
+      "minYValue": 0
+    },
+    "Plot!host": {
+      "foxglovePanelTitle": "Host (% / °C)",
+      "paths": [
+        {
+          "value": "/studio_script/diag_values.values[:]{name==\"cpu_monitor_eyes: CPU Information\"}{key==\"CPU Load Average\"}.value",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "cpu"
+        },
+        {
+          "value": "/studio_script/diag_values.values[:]{name==\"ram_monitor_eyes: RAM Information\"}{key==\"RAM Load Average\"}.value",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "ram"
+        },
+        {
+          "value": "/studio_script/diag_values.values[:]{name==\"oakd: sys_logger\"}{key==\"Average Chip Temperature\"}.value",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "oak °C"
+        },
+        {
+          "value": "/studio_script/diag_values.values[:]{name==\"oakd: sys_logger\"}{key==\"Leon CSS CPU Usage\"}.value",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "oak cpu"
+        }
+      ],
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": false,
+      "legendDisplay": "top",
+      "showPlotValuesInLegend": false,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "followingViewWidth": 60,
+      "sidebarDimension": 240,
+      "minYValue": 0,
+      "maxYValue": 100
+    },
+    "DiagnosticSummary!diag": {
+      "minLevel": 0,
+      "pinnedIds": [],
+      "hardwareIdFilter": "",
+      "topicToRender": "/diagnostics",
+      "sortByLevel": true,
+      "secondsUntilStale": 5
+    },
+    "RosOut!log": {
+      "searchTerms": [],
+      "minLogLevel": 3,
+      "topicToRender": "/rosout",
+      "nameFilter": {},
+      "fontSize": 12,
+      "showLevel": true,
+      "showDate": true,
+      "showTime": true,
+      "showTimezone": true,
+      "showName": true,
+      "showSourceLocation": false
+    },
+    "3D!map": {
+      "followTf": "base_link",
+      "followMode": "follow-pose",
+      "scene": {},
+      "transforms": {},
+      "topics": {
+        "/cloud_map": {
+          "visible": true,
+          "colorField": "rgb",
+          "colorMode": "rgb",
+          "colorMap": "turbo"
+        },
+        "/map": {
+          "visible": true
+        },
+        "/mapPath": {
+          "visible": true
+        }
+      },
+      "layers": {
+        "grid": {
+          "visible": true,
+          "layerId": "foxglove.Grid",
+          "frameId": "map",
+          "size": 10,
+          "divisions": 10,
+          "order": 1
+        }
+      },
+      "cameraState": {
+        "distance": 5.999999999999828,
+        "perspective": true,
+        "phi": 55.000000000000426,
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOffset": [
+          1.512758980252767,
+          -1.527811308414497,
+          -8.271741426322164e-18
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "thetaOffset": 45.000000000000995,
+        "fovy": 45,
+        "near": 0.5,
+        "far": 5000
+      },
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      },
+      "synchronize": false,
+      "imageMode": {}
+    },
+    "Image!camera": {
+      "cameraState": {
+        "distance": 20,
+        "perspective": true,
+        "phi": 60,
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOffset": [
+          0,
+          0,
+          0
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "thetaOffset": 60,
+        "fovy": 45,
+        "near": 0.5,
+        "far": 5000
+      },
+      "imageMode": {
+        "imageTopic": "/oakd/right/image_rect"
+      },
+      "topics": {},
+      "layers": {},
+      "transforms": {},
+      "scene": {},
+      "followMode": "follow-pose",
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      },
+      "synchronize": false
+    }
+  },
+  "globalVariables": {},
+  "userNodes": {
+    "diag-values": {
+      "name": "diag_values",
+      "sourceCode": "// Diagnostic values are strings, which Plot can't graph. Republish every numeric\n// key/value as a number: /studio_script/diag_values.values[:]{name==\"...\"}{key==\"...\"}.value\nimport { Input } from \"./types\";\n\nexport const inputs = [\"/diagnostics\"];\nexport const output = \"/studio_script/diag_values\";\n\ntype Value = { name: string; key: string; value: number };\ntype Output = { values: Value[] };\n\nexport default function script(event: Input<\"/diagnostics\">): Output {\n  const values: Value[] = [];\n  for (const status of event.message.status) {\n    for (const kv of status.values) {\n      const value = parseFloat(kv.value);\n      if (!Number.isNaN(value)) {\n        values.push({ name: status.name, key: kv.key, value });\n      }\n    }\n  }\n  return { values };\n}\n"
+    }
+  },
+  "playbackConfig": {
+    "speed": 1
+  },
+  "layout": {
+    "first": {
+      "first": {
+        "first": "Plot!pipelinehz",
+        "second": "Plot!votiming",
+        "direction": "column",
+        "splitPercentage": 50
+      },
+      "second": {
+        "first": "Plot!tracking",
+        "second": "Plot!host",
+        "direction": "column",
+        "splitPercentage": 50
+      },
+      "direction": "column",
+      "splitPercentage": 50
+    },
+    "second": {
+      "first": {
+        "first": "DiagnosticSummary!diag",
+        "second": "RosOut!log",
+        "direction": "column",
+        "splitPercentage": 45
+      },
+      "second": {
+        "first": "3D!map",
+        "second": "Image!camera",
+        "direction": "column",
+        "splitPercentage": 54.95594713656388
+      },
+      "direction": "row",
+      "splitPercentage": 57.7962577962578
+    },
+    "direction": "row",
+    "splitPercentage": 24.921956295525494
+  }
+}
