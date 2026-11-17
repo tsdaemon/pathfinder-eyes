@@ -79,11 +79,10 @@ subscribes to `cmd_vel` (`geometry_msgs/Twist`) and normalizes `linear.x`/`linea
 `angular.z` directly into `[-1, 1]` by dividing by the `max_linear_speed`/`max_angular_speed`
 ROS params (defaults 0.5 m/s, 1.5 rad/s — tune to taste). A 20Hz timer sends the latest values
 as `VEL:vx,vy,wz`, deduped against the last-sent tuple so a steady `cmd_vel` doesn't spam the
-UART with identical lines. There's no silence-based auto-stop on either end anymore (the
-Pico-side one was dropped earlier as unnecessary complexity, and the ROS-side one was pulsing
-motion to zero whenever Foxglove's Teleop panel didn't publish a perfectly steady stream) — the
-robot now simply keeps doing whatever it was last told until a new command arrives. Launch
-with:
+UART with identical lines. If `cmd_vel` goes quiet for 0.5 s it sends a stop (`CMD_TIMEOUT_S`),
+so a lost "release" message can't leave the robot driving. Senders must repeat faster than
+2 Hz: teleop_twist_joy does ~20 Hz while LB is held; set Foxglove's Teleop panel publish rate
+to 5 Hz or more, or motion pulses. The Pico itself has no timeout. Launch with:
 
 ```bash
 cd ros2_ws && python launch_pico_control.py     # needs /dev/ttyAMA0 and a flashed Pico

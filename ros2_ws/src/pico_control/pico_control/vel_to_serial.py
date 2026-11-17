@@ -5,6 +5,10 @@ from geometry_msgs.msg import Twist
 from rclpy.node import Node
 
 SEND_PERIOD_S = 0.05  # 20Hz
+# Stop if cmd_vel goes quiet: teleop sends a single zero on release, and if that message is
+# lost (e.g. the Bluetooth gamepad drops) the robot would otherwise keep its last command.
+# Senders must repeat at > 2 Hz (teleop_twist_joy does ~20 Hz while the enable button is held).
+CMD_TIMEOUT_S = 0.5
 
 
 def _clamp(value, limit):
@@ -32,6 +36,7 @@ class VelToSerialNode(Node):
         self.vy = 0.0
         self.wz = 0.0
         self._last_sent = None
+        self._last_cmd_time = None
 
         self.subscription = self.create_subscription(
             Twist, "cmd_vel", self._on_cmd_vel, 10
@@ -47,8 +52,16 @@ class VelToSerialNode(Node):
         self.vx = _clamp(msg.linear.x, self.max_linear_speed)
         self.vy = _clamp(msg.linear.y, self.max_linear_speed)
         self.wz = _clamp(msg.angular.z, self.max_angular_speed)
+        self._last_cmd_time = self.get_clock().now()
 
     def _send_vel(self):
+        if (
+            self._last_cmd_time is not None
+            and (self.get_clock().now() - self._last_cmd_time).nanoseconds * 1e-9
+            > CMD_TIMEOUT_S
+        ):
+            self.vx = self.vy = self.wz = 0.0
+            self._last_cmd_time = None
         values = (self.vx, self.vy, self.wz)
         if values == self._last_sent:
             return
