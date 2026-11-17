@@ -1,4 +1,5 @@
 from launch import LaunchDescription
+from launch.actions import ExecuteProcess
 from launch_ros.actions import Node
 
 aggregation_params_filepath = "config/diagnostics_aggregation.yaml"
@@ -26,10 +27,15 @@ def generate_launch_description():
         parameters=[],
     )
 
+    # Per-stage message rates of the VIO pipeline + odom TF freshness (pipeline_monitor.py).
+    pipeline_monitor = ExecuteProcess(
+        cmd=["python3", "pipeline_monitor.py"], output="screen"
+    )
     return LaunchDescription(
         [
             # aggregator,
             cpu_monitor,
             memory_monitor,
+            pipeline_monitor,
         ]
     )

@@ -36,7 +36,9 @@ Layout: import [foxglove/pathfinder.json](../foxglove/pathfinder.json)
 (Layouts → Import). Plots on the left, diagnostics + log in the middle, 3D + camera on the right.
 It includes a User Script (`diag_values`) that republishes `/diagnostics` string values as
 numbers on `/studio_script/diag_values`. To plot another diagnostic, add a Plot path
-`/studio_script/diag_values.values[:]{name=="<status name>"}{key=="<key>"}.value`.
+`/studio_script/diag_values.values[:]{name=="<status name>"}{key=="<key>"}.value`
+(pipeline rates: status `pipeline: /vo`, key `hz`). For the node/topic graph itself, add a
+Topic Graph panel — it shows wiring, not whether messages actually flow.
 
 ## Manual driving today
 

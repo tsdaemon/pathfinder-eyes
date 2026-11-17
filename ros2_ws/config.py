@@ -25,10 +25,19 @@ RTABMAP_COMMON_PARAMS = {
     # Was "true": that defers the new map until a loop closure with the old one is found,
     # which didn't kick in at all during the 2026-11-11 test (no "Increment map id" in the log).
     "Rtabmap/StartNewMapOnLoopClosure": "false",
-    "RGBD/ForceOdom3DoF": "false",
-    # "Reg/Force3DoF": "true",
-    # "Optimizer/Slam2D": "true",
+    # Ground robot: x, y, yaw only - for VO, loop closures and the graph optimisation (this
+    # also makes the optimiser 2D). Without it the map frame picked up ~0.5-1.5 deg of
+    # roll/pitch, which tips the floor into the occupancy grid at range (2026-11-17).
+    # RGBD/ForceOdom3DoF stays at its default "true" so odometry is flattened too.
+    "Reg/Force3DoF": "true",
     "wait_imu_to_init": True,
+}
+
+# rtabmap SLAM node only (not VO, which reads the same Vis/ parameters). Loop closures
+# were rejected at 14-16 inliers of the default 20 when returning to the start
+# (2026-11-17); VO only extracts 500 features, so 20 is strict.
+RTABMAP_SLAM_PARAMS = {
+    "Vis/MinInliers": "15",
 }
 
 RTABMAP_INERTIAL_PARAMS = [

@@ -10,6 +10,7 @@ from config import (
     OAKD_NAME,
     ODOM_DROPOUT_MODE,
     RTABMAP_INERTIAL_PARAMS,
+    RTABMAP_SLAM_PARAMS,
     VO_TOPIC,
 )
 
@@ -90,7 +91,7 @@ def generate_launch_description():
                 package="rtabmap_slam",
                 executable="rtabmap",
                 output="screen",
-                parameters=slam_params,
+                parameters=[p | RTABMAP_SLAM_PARAMS for p in slam_params],
                 remappings=slam_remappings,
                 arguments=["-d"],
             ),

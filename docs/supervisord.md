@@ -11,7 +11,7 @@ hand, so it survives crashes and can be restarted from ROS. Config:
 | `rtabmap` | [launch_rmaptab_inertial.py](../ros2_ws/launch_rmaptab_inertial.py) | visual odometry + SLAM |
 | `foxglove_bridge` | `ros2 run foxglove_bridge` on port 8765 | remote visualisation |
 | `supervisord_bridge` | [launch_supervisord_bridge.py](../ros2_ws/launch_supervisord_bridge.py) | process control + health from ROS |
-| `diagnostics` | [launch_diagnostics.py](../ros2_ws/launch_diagnostics.py) | CPU / RAM monitors |
+| `diagnostics` | [launch_diagnostics.py](../ros2_ws/launch_diagnostics.py) | CPU / RAM monitors, pipeline health |
 | `pico_control` | [launch_pico_control.py](../ros2_ws/launch_pico_control.py) | `cmd_vel` → Pico over UART |
 | `teleop_joy` | [launch_teleop_joy.py](../ros2_ws/launch_teleop_joy.py) | `/joy` → `cmd_vel` |
 
@@ -63,8 +63,12 @@ rebuild.
 
 ## diagnostics
 
-[launch_diagnostics.py](../ros2_ws/launch_diagnostics.py) runs `cpu_monitor` and
-`ram_monitor`. The `diagnostic_aggregator` node (config at
+[launch_diagnostics.py](../ros2_ws/launch_diagnostics.py) runs `cpu_monitor`,
+`ram_monitor` and [pipeline_monitor.py](../ros2_ws/pipeline_monitor.py). The pipeline monitor
+publishes a `pipeline: <topic>` status (key `hz`) per VIO stage — IMU raw/filtered, camera,
+depth, VO, EKF — plus `pipeline: tf odom -> base_link` (key `age`). ERROR means that stage is
+silent. If `/oakd/imu/data` is ERROR while the cameras are OK, the IMU didn't start: restart
+the `depthai` program. The `diagnostic_aggregator` node (config at
 [ros2_ws/config/diagnostics_aggregation.yaml](../ros2_ws/config/diagnostics_aggregation.yaml))
 is also commented out there — currently nothing rolls the individual `/diagnostics` entries
 into a single summary status.
