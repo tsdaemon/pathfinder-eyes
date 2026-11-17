@@ -1,4 +1,10 @@
-dtoverlay=disable-bt
+dtparam=audio=off
+
+dtparam=spi=off
+
+dtoverlay=vc4-kms-v3d,cma-128
+#dtoverlay=disable-bt
 dtoverlay=uart0,txd0_pin=14,rxd0_pin=15
-enable_uart=1
 dtoverlay=dwc2
+
+enable_uart=1

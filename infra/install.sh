@@ -1,1 +1,1 @@
-sudo apt install -y raspi-config i2c-tools
+sudo apt install -y raspi-config i2c-tools bluez

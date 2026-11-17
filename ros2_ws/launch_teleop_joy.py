@@ -6,6 +6,14 @@ from launch.launch_service import LaunchService
 def generate_launch_description():
     return LaunchDescription(
         [
+            # Reads the gamepad paired to the Pi over Bluetooth (8BitDo Ultimate 2 Wireless)
+            # and publishes /joy. Picks the controller up when it (re)connects.
+            Node(
+                package="joy",
+                executable="joy_node",
+                name="joy_node",
+                output="screen",
+            ),
             Node(
                 package="teleop_twist_joy",
                 executable="teleop_node",

@@ -1,11 +1,9 @@
 teleop_twist_joy_node:
   ros__parameters:
-    # Confirmed against a live /joy message: 4 axes + 17 buttons, all near-zero at rest -
-    # matches the W3C Standard Gamepad Mapping's axis count, so axis 0/1 = left stick X/Y,
-    # axis 2 = right stick X. Signs confirmed by testing (not the spec's textbook -1-at-top/
-    # left convention, which turned out backwards for this extension) - positive scales give
-    # forward/left-strafe/left-turn reading positive, matching the vx/vy/wz conventions in
-    # vel_to_serial.py.
+    # 8BitDo Ultimate 2 Wireless over Bluetooth via joy_node (8 axes, 24 buttons), mapped
+    # with tools/joy_probe.py: axis 0/1 = left stick X/Y, axis 2 = right stick X, all reading
+    # positive for left/up - matching the vx/vy/wz conventions in vel_to_serial.py.
+    # LB/RB = buttons 6/7. Triggers are axes 5 (LT) / 4 (RT), 1.0 released, unused.
     axis_linear:
       x: 1   # left stick vertical
       y: 0   # left stick horizontal
@@ -20,8 +18,6 @@ teleop_twist_joy_node:
       y: 0.5
     scale_angular:
       yaw: 1.5
-    # Standard mapping's button 4 = left bumper (L1) - easy to hold with the sticks still in
-    # use, unlike a stick-click. Not yet confirmed comfortable/correct - test by holding it
-    # while checking /cmd_vel reacts, adjust if it's the wrong button or an awkward hold.
+    # Hold LB to drive, RB for turbo.
     enable_button: 6
     enable_turbo_button: 7
