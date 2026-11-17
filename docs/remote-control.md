@@ -39,6 +39,9 @@ numbers on `/studio_script/diag_values`. To plot another diagnostic, add a Plot 
 `/studio_script/diag_values.values[:]{name=="<status name>"}{key=="<key>"}.value`
 (pipeline rates: status `pipeline: /vo`, key `hz`). For the node/topic graph itself, add a
 Topic Graph panel — it shows wiring, not whether messages actually flow.
+VO's features over the camera image: Image panel on `/oakd/right/image_rect/compressed`,
+settings → Annotations → enable `/vo_features` (green = inliers, yellow = matched but rejected, plus counts; from
+[vo_features.py](../ros2_ws/vo_features.py)).
 
 ## Manual driving today
 
@@ -47,30 +50,44 @@ Foxglove's **Teleop panel** publishes `geometry_msgs/Twist` directly to `cmd_vel
 right now with no additional stack — it's the cheapest option and good enough for
 driving-around testing.
 
-**Joystick:** an 8BitDo Ultimate 2 Wireless paired to the Pi over Bluetooth. The
-`teleop_joy` supervisord program ([launch_teleop_joy.py](../ros2_ws/launch_teleop_joy.py))
-runs `joy_node` (reads the pad, publishes `/joy`) and `teleop_twist_joy` (turns `/joy` into
-`/cmd_vel`). No laptop needed. Hold **LB** to drive, **RB** for turbo; left stick = drive and
-strafe, right stick X = turn. Mapping in
-[config/teleop_joy.yaml](../ros2_ws/config/teleop_joy.yaml).
+**Steam Deck (main way to drive):** [deck/drive.py](../deck/drive.py) reads the Deck's
+controls and sends them over Wi-Fi (UDP port 9010, ~50 Hz) to `eyes.local`.
+[udp_joy.py](../ros2_ws/udp_joy.py) on the Pi publishes them as `/joy`, and
+`teleop_twist_joy` turns that into `/cmd_vel`; both run in the `teleop_joy` supervisord
+program ([launch_teleop_joy.py](../ros2_ws/launch_teleop_joy.py)). Hold **LB** to drive,
+**RB** for turbo; left stick = drive and strafe, right stick X = turn. Mapping in
+[config/teleop_joy.yaml](../ros2_ws/config/teleop_joy.yaml). If packets stop for 0.3 s the
+bridge releases everything and the robot stops.
 
-The controller is paired and trusted, so it reconnects on its own: press **Home** to wake it.
-To pair a new one (needs `bluez`, and `dtoverlay=disable-bt` removed from
-`/boot/firmware/config.txt` - on a Pi 5 Bluetooth has its own UART, separate from the
-Pico's):
+Setup on the Deck (Desktop Mode, Konsole), once:
 
 ```bash
-bluetoothctl scan on            # pad in pairing mode; note its MAC
-bluetoothctl pair <MAC> && bluetoothctl trust <MAC> && bluetoothctl connect <MAC>
+git clone <this repo> ~/eyes          # or copy the deck/ folder
+python -m venv ~/eyes-drive && ~/eyes-drive/bin/pip install pygame
+~/eyes/deck/drive.sh                  # test: window shows robot IP and pad name
 ```
 
-The first connection after pairing can fail with `input-hog profile accept failed` in
-`journalctl -u bluetooth` and no gamepad device appearing; disconnect and wake it with Home.
-To re-map another controller, run `joy_node` and
-[tools/joy_probe.py](../ros2_ws/tools/joy_probe.py) and move each control.
+For Game Mode: Steam → Add a Non-Steam Game → browse to `~/eyes/deck/drive.sh`; keep the
+default Gamepad controller layout. Pass another host as an argument if `eyes.local` doesn't
+resolve (e.g. on a hotspot): `drive.sh 192.168.x.y`.
 
-Don't run Foxglove's joystick panel in publish mode at the same time - it also publishes
-`/joy`.
+Control station: run Foxglove on the Deck (camera, diagnostics, map - see the layout above)
+next to `drive.py`. Driving deliberately stays on its own UDP channel instead of Foxglove's
+websocket (TCP: after a Wi-Fi hiccup it delivers stale inputs late), and `drive.py` keeps
+reading the pad while Foxglove has focus. Not yet checked on the Deck: how Foxglove installs
+on SteamOS, and whether Steam Input's desktop layout (trackpad mouse, etc.) gets in the way
+when both run in Desktop Mode - launching `drive.sh` through Steam applies a Gamepad layout.
+
+Network: the Deck and the Pi only need the same Wi-Fi. Away from home, start a hotspot whose
+SSID/password the Pi already knows (`nmcli connection show` on the Pi lists them). Use
+5 GHz where possible: the camera's USB 3 traffic interferes with 2.4 GHz next to the Pi.
+
+**Bluetooth gamepad (dropped 2026-11-17):** an 8BitDo paired to the Pi lagged and replayed
+inputs late. To use one anyway, swap `udp_joy.py` for `joy_node` in
+[launch_teleop_joy.py](../ros2_ws/launch_teleop_joy.py); pair with
+`bluetoothctl pair/trust/connect <MAC>`, map with
+[tools/joy_probe.py](../ros2_ws/tools/joy_probe.py). Only one `/joy` source at a time -
+that includes Foxglove's joystick panel in publish mode.
 
 ## Giving it plans (not yet wired up)
 

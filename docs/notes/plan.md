@@ -2,6 +2,15 @@
 
 ## Next step
 
+(2026-11-17) Give the robot goals: Nav2 on RTAB-Map's map, goals clicked in Foxglove - see
+[docs/plans/nav2-goals.md](../plans/nav2-goals.md). Then frontier exploration.
+
+VIO is good enough to build on: a joystick room loop returned within ~4 cm / 7 deg in the
+`map` frame (raw odometry 38 cm). Driving moves to a Steam Deck over Wi-Fi (Bluetooth gamepad
+dropped: lag and late-replayed inputs) - client written, not yet tried on the Deck.
+
+## Previous step: VIO
+
 Get robot VIO to work: see that it can move through the room in complex motion, and then
 return to the same spot.
 

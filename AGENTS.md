@@ -54,6 +54,8 @@ OAK-D and Pico are physically attached and can be live. Concretely:
   two custom packages, everything else under it is launch files / config.
 - `robot/` — MicroPython firmware for the Pico, flashed with `mpremote` (see
   [robot/Makefile](robot/Makefile)).
+- `deck/` — Steam Deck drive client (runs on the Deck, not the Pi) — see
+  [docs/remote-control.md](docs/remote-control.md).
 - `infra/` — one-shot apt install scripts, split by purpose (ROS, depthai, Pico tooling,
   ground station).
 - `_archive/` — dead code from a pre-OAK-D attempt (two IMX219 cameras, Kalibr calibration).

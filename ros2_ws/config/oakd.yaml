@@ -9,15 +9,18 @@
       i_disable_node: true
     left:
       i_resolution: "400P"
-      # Fixed exposure/gain to cut motion blur at speed - see docs/notes/2026.08.07.md.
-      r_set_man_exposure: true
-      r_exposure: 3000
-      r_iso: 800
+      # Auto exposure, capped at 8 ms to limit motion blur (~5 px at the slowest 1.3 rad/s
+      # turn; VO is ignored during faster turns). Was fixed at 3 ms / ISO 800: in normal room
+      # light dark furniture came out near-black (mean brightness 43/255, depth on 34% of
+      # pixels) and VO dropped to ~25 inliers and kept losing track (2026-11-17).
+      r_set_man_exposure: false
+      r_set_auto_exposure_limit: true
+      r_auto_exposure_limit: 8000
     right:
       i_resolution: "400P"
-      r_set_man_exposure: true
-      r_exposure: 3000
-      r_iso: 800
+      r_set_man_exposure: false
+      r_set_auto_exposure_limit: true
+      r_auto_exposure_limit: 8000
     stereo:
       i_publish_topic: true
       i_align_depth: false

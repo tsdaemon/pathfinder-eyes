@@ -1,8 +1,9 @@
 teleop_twist_joy_node:
   ros__parameters:
-    # 8BitDo Ultimate 2 Wireless over Bluetooth via joy_node (8 axes, 24 buttons), mapped
-    # with tools/joy_probe.py: axis 0/1 = left stick X/Y, axis 2 = right stick X, all reading
-    # positive for left/up - matching the vx/vy/wz conventions in vel_to_serial.py.
+    # Layout of the 8BitDo Ultimate 2 Wireless via joy_node (8 axes, 24 buttons), mapped
+    # with tools/joy_probe.py; deck/drive.py (Steam Deck, via udp_joy.py) sends the same
+    # layout. Axis 0/1 = left stick X/Y, axis 2 = right stick X, all reading positive for
+    # left/up - matching the vx/vy/wz conventions in vel_to_serial.py.
     # LB/RB = buttons 6/7. Triggers are axes 5 (LT) / 4 (RT), 1.0 released, unused.
     axis_linear:
       x: 1   # left stick vertical

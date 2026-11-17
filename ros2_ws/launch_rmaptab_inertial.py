@@ -86,6 +86,8 @@ def generate_launch_description():
                 remappings=odom_remappings,
             ),
             *extra_nodes,
+            # VO's features as a Foxglove image overlay on /vo_features (see the script).
+            ExecuteProcess(cmd=["python3", "vo_features.py"], output="screen"),
             # VSLAM
             Node(
                 package="rtabmap_slam",

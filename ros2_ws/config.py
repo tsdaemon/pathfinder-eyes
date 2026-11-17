@@ -38,6 +38,17 @@ RTABMAP_COMMON_PARAMS = {
 # (2026-11-17); VO only extracts 500 features, so 20 is strict.
 RTABMAP_SLAM_PARAMS = {
     "Vis/MinInliers": "15",
+    # 2D occupancy grid (/map) for Nav2's costmaps. Defaults were a 3D grid with no height
+    # limit (table tops became walls), 5 m range (400P stereo is noisy that far) and no ray
+    # tracing (space that freed up never cleared).
+    "Grid/3D": "false",
+    "Grid/RayTracing": "true",
+    "Grid/RangeMax": "3.0",
+    # Ground by height, not surface normals: the map is flat (Reg/Force3DoF) so the floor
+    # sits at z ~= 0. Robot is ~0.2 m tall; above 0.4 m nothing can hit it.
+    "Grid/NormalsSegmentation": "false",
+    "Grid/MaxGroundHeight": "0.03",
+    "Grid/MaxObstacleHeight": "0.4",
 }
 
 RTABMAP_INERTIAL_PARAMS = [

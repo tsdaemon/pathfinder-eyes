@@ -26,8 +26,14 @@ TOPICS = [
     ("/vo", Odometry, 3.0),
     ("/odometry/filtered", Odometry, 15.0),
 ]
-TF_PAIR = ("odom", "base_link")
-TF_MAX_AGE = 0.5  # s
+# (parent, child, max age in s or None for static). The camera/IMU frames come from the
+# driver's oakd_state_publisher, which sometimes doesn't start (2026-11-17): images still
+# flow, but VO can't place them and the EKF can't use the gyro.
+TF_CHECKS = [
+    ("odom", "base_link", 0.5),
+    ("base_link", "oakd_right_camera_optical_frame", None),
+    ("base_link", "oakd_imu_frame", None),
+]
 PERIOD = 2.0  # s, rate window and publish period
 
 
@@ -72,15 +78,22 @@ class PipelineMonitor(Node):
                 level, text = DiagnosticStatus.OK, f"{hz:.1f} Hz"
             msg.status.append(self.status(topic, level, text, {"hz": f"{hz:.1f}"}))
 
-        parent, child = TF_PAIR
-        try:
-            stamp = self.tf_buffer.lookup_transform(parent, child, Time()).header.stamp
-            age = (self.get_clock().now() - Time.from_msg(stamp)).nanoseconds * 1e-9
-            level = DiagnosticStatus.OK if age < TF_MAX_AGE else DiagnosticStatus.ERROR
-            text, values = f"age {age:.2f} s", {"age": f"{age:.2f}"}
-        except tf2_ros.TransformException:
-            level, text, values = DiagnosticStatus.ERROR, "no transform", {}
-        msg.status.append(self.status(f"tf {parent} -> {child}", level, text, values))
+        for parent, child, max_age in TF_CHECKS:
+            try:
+                tf = self.tf_buffer.lookup_transform(parent, child, Time())
+            except tf2_ros.TransformException:
+                level, text, values = DiagnosticStatus.ERROR, "no transform", {}
+            else:
+                if max_age is None:
+                    level, text, values = DiagnosticStatus.OK, "present", {}
+                else:
+                    now = self.get_clock().now()
+                    age = (now - Time.from_msg(tf.header.stamp)).nanoseconds * 1e-9
+                    ok = age < max_age
+                    level = DiagnosticStatus.OK if ok else DiagnosticStatus.ERROR
+                    text, values = f"age {age:.2f} s", {"age": f"{age:.2f}"}
+            name = f"tf {parent} -> {child}"
+            msg.status.append(self.status(name, level, text, values))
         self.pub.publish(msg)
 
 

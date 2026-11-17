@@ -1,4 +1,5 @@
 from launch import LaunchDescription
+from launch.actions import ExecuteProcess
 from launch_ros.actions import Node
 from launch.launch_service import LaunchService
 
@@ -6,14 +7,11 @@ from launch.launch_service import LaunchService
 def generate_launch_description():
     return LaunchDescription(
         [
-            # Reads the gamepad paired to the Pi over Bluetooth (8BitDo Ultimate 2 Wireless)
-            # and publishes /joy. Picks the controller up when it (re)connects.
-            Node(
-                package="joy",
-                executable="joy_node",
-                name="joy_node",
-                output="screen",
-            ),
+            # Gamepad state from the Steam Deck over Wi-Fi (deck/drive.py) -> /joy. Replaced
+            # the Bluetooth gamepad + joy_node, which lagged and replayed inputs late with the
+            # camera's USB 3 traffic next to the Pi's antenna (2026-11-17). Only one /joy
+            # source at a time: to use a BT pad instead, swap this for joy_node.
+            ExecuteProcess(cmd=["python3", "udp_joy.py"], output="screen"),
             Node(
                 package="teleop_twist_joy",
                 executable="teleop_node",
